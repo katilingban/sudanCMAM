@@ -1,0 +1,30 @@
+---
+title: "Sudan CMAM Dashboard"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    social: menu
+    source_code: https://github.com/katilingban/sudanCMAM
+    theme: simplex
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+
+load("data/sudan_cmam.rda")
+```
+
+Sidebar {.sidebar}
+================================================================================
+
+Performance
+================================================================================
+
+Responsiveness
+================================================================================
+
+Case-finding
+================================================================================
+
