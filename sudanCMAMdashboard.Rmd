@@ -10,13 +10,19 @@ output:
     theme: cerulean
 ---
 
-```{r setup, include =FALSE}
+```{r setup, include = FALSE}
 if(!require(flexdashboard)) install.packages("flexdashboard")
 if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(magrittr)) install.packages("magrittr")
 if(!require(plotly)) install.packages("plotly")
 if(!require(remotes)) install.packages("remotes")
-if(!require(squeacr)) remotes:install_github("rapidsurveys/squeacr")
+if(!require(squeacr)) remotes::install_github("rapidsurveys/squeacr")
+
+library(flexdashboard)
+library(ggplot2)
+library(magrittr)
+library(plotly)
+library(remotes)
 
 load("data/sudan_cmam.rda")
 ```
