@@ -37,10 +37,10 @@ set1 <- set1 %>%
 
 ## Clean up variable names
 names(set1) <- str_to_title(names(set1))
-sudan_cmam <- set1
+monitoring <- set1
 
 ## Save data as rda ############################################################
-save(sudan_cmam, file = "data/sudan_cmam.rda", compress = "xz")
+save(monitoring, file = "data/sudan_cmam.rda", compress = "xz")
 
 
 ## Clean up workspace ##########################################################
