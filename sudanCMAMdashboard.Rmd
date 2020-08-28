@@ -25,15 +25,14 @@ Sidebar {.sidebar}
 ================================================================================
 
 ```{r}
-# Define inputs
-selectInput(inputId = "state_name",
-            label = "Select state",
-            choices = unique(monitoring$State),
-            selected = NULL)
-
 selectInput(inputId = "chosen_year",
             label = "Select year",
             choices = unique(monitoring$Year),
+            selected = NULL)
+
+selectInput(inputId = "state_name",
+            label = "Select state",
+            choices = unique(monitoring$State),
             selected = NULL)
 ```
 
@@ -46,24 +45,30 @@ Row
 ### National
 
 ```{r}
-output$performance <- renderPlotly({
-  x <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
-                 data = monitoring, FUN = sum) %>% 
+x <- reactive({
+  aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
+            data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
-    mutate(Month = factor(x = Month, 
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
                           levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
-  
-  z <- x %>% 
+})
+
+output$performance <- renderPlotly({
+  z <- x() %>% 
     ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = cured_prop * 100), colour = "darkgreen") +
-    geom_line(mapping = aes(y = dead_prop * 100), colour = "black") +
-    geom_line(mapping = aes(y = defaulter_prop * 100), colour = "red") +
-    geom_line(mapping = aes(y = nr_prop * 100), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(y = "%") +
-    facet_wrap( ~ Year, ncol = 4) +
     theme_bw()  
   
   ggplotly(p = z)
@@ -77,24 +82,28 @@ Row
 
 ### By state
 
-```{r, fig.height = 12}
+```{r, fig.height = 10}
 xstate <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
                data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(Month = factor(x = Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", 
-                                                "Jun", "Jul", "Aug", "Sep", "Oct", 
-                                                "Nov", "Dec")))
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
 })
 
 output$state_performance <- renderPlotly({
   z <- xstate() %>%
     ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = cured_prop * 100), colour = "darkgreen") +
-    geom_line(mapping = aes(y = dead_prop * 100), colour = "black") +
-    geom_line(mapping = aes(y = defaulter_prop * 100), colour = "red") +
-    geom_line(mapping = aes(y = nr_prop * 100), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(y = "%") +
@@ -112,24 +121,28 @@ Row
 
 ### By locality
 
-```{r, fig.height = 12}
+```{r, fig.height = 10}
 xlocality <- reactive({
   monitoring %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year,
            State == input$state_name) %>%
-    mutate(Month = factor(x = Month, levels = c("Jan", "Feb", "Mar", "Apr", "May", 
-                                                "Jun", "Jul", "Aug", "Sep", "Oct", 
-                                                "Nov", "Dec")))
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
 })
 
 output$locality_performance <- renderPlotly({
   z <- xlocality() %>%
     ggplot(mapping = aes(x = Month, group = Locality)) +
-    geom_line(mapping = aes(y = cured_prop * 100), colour = "darkgreen") +
-    geom_line(mapping = aes(y = dead_prop * 100), colour = "black") +
-    geom_line(mapping = aes(y = defaulter_prop * 100), colour = "red") +
-    geom_line(mapping = aes(y = nr_prop * 100), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(y = "%") +
