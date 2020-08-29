@@ -310,8 +310,9 @@ admissions_defaulters <- reactive({
     filter(Year == input$chosen_year) %>%
     mutate(Month = factor(x = Month, 
                           levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")),
-           `Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))) %>%
+    arrange(Month) %>%
+    mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
            `Defaulters (smoothed)` = smooth_m3a3(x = Default))
 })
 
@@ -390,8 +391,10 @@ state_admissions_defaulters <- reactive({
     filter(Year == input$chosen_year) %>%
     mutate(Month = factor(x = Month, 
                           levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")),
-           `Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))) %>%
+    group_by(State) %>%
+    arrange(Month, .by_group = TRUE) %>%
+    mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
            `Defaulters (smoothed)` = smooth_m3a3(x = Default))
 })
 
