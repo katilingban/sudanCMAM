@@ -24,7 +24,61 @@ library(magrittr)
 library(plotly)
 library(remotes)
 
-load("data/sudan_cmam.rda")
+## Load UNICEF palette
+unicef_blue      <- "#1CABE2"
+unicef_darkgreen <- "#00833D"
+unicef_green     <- "#80BD41"
+unicef_yellow    <- "#FFC20E"
+unicef_orange    <- "#F26A21"
+unicef_red       <- "#E2231A"
+unicef_darkred   <- "#961A49" 
+unicef_purple    <- "#6A1E74"
+unicef_warmgrey  <- "#D8D1C9"
+unicef_coolgrey  <- "#777779"
+unicef_black     <- "#2D2926"
+unicef_darkblue  <- "#374EA2"
+
+## UNICEF ggplot theme settings
+unicef_theme <- theme_bw() +
+  theme(plot.title = element_text(size = 16, colour = unicef_darkblue),
+        plot.subtitle = element_text(size = 14, colour = unicef_blue),
+        panel.border = element_rect(colour = unicef_darkblue,
+                                    size = 0.5),
+        panel.grid.major = element_line(linetype = 0),
+        panel.grid.minor = element_line(linetype = 0),
+        strip.background = element_rect(colour = unicef_darkblue,
+                                        fill = unicef_darkblue),
+        strip.text = element_text(colour = "white", size = 12),
+        legend.key = element_rect(linetype = 0),
+        legend.key.size = unit(x = 12, units = "points"),
+        legend.spacing = unit(x = 4, units = "points"),
+        legend.text = element_text(size =  12),
+        axis.line.x = element_line(colour = unicef_darkblue, size = 0.5),
+        axis.text.x = element_text(size = 10, colour = unicef_darkblue),
+        axis.title.x = element_text(size = 12, colour = unicef_blue),
+        axis.text.y = element_text(size = 10, colour = unicef_darkblue),
+        axis.title.y = element_text(size = 12, colour = unicef_blue),
+        axis.ticks = element_line(colour = unicef_darkblue, size = 0.25))
+
+## Katilingban theme
+katilingban_theme <- theme_bw() +
+  theme(panel.border = element_rect(colour = "gray50",
+                                    size = 0.5),
+        panel.grid.major = element_line(linetype = 1,
+                                        size = 0.1,
+                                        colour = "gray90"),
+        panel.grid.minor = element_line(linetype = 0),
+        strip.background = element_rect(colour = "gray50",
+                                        fill = "gray70"),
+        strip.text = element_text(colour = "white", size = 12),
+        legend.text = element_text(size = 12),
+        legend.key = element_rect(linetype = 0),
+        legend.key.size = unit(0.5, "cm"),
+        legend.position = "top",
+        axis.title = element_text(size = 12),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.ticks = element_line(colour = "gray50", size = 0.5))
 ```
 
 Sidebar {.sidebar}
@@ -42,13 +96,29 @@ selectInput(inputId = "state_name",
             selected = NULL)
 ```
 
+#### Performance indicators
+
+```{r}
+checkboxInput(inputId = "standards",
+              label = "Show Sphere standards",
+              value = FALSE)
+```
+
+#### Responsiveness settings
+
+```{r}
+checkboxInput(inputId = "smooth",
+              label = "Smooth the curve",
+              value = FALSE)
+```
+
 Performance
 ================================================================================
 
 Row
 --------------------------------------------------------------------------------
 
-### National
+### Performance Indicators at National Level
 
 ```{r}
 x <- reactive({
@@ -73,20 +143,38 @@ output$performance <- renderPlotly({
     geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
     geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
-                       breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(y = "%") +
-    theme_bw()  
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = input$chosen_year, y = "%")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + unicef_theme
+  } else {
+    z <- z + unicef_theme
+  }
   
   ggplotly(p = z)
 })
 
-plotlyOutput("performance")
+plotlyOutput(outputId = "performance")
 ```
 
 Row
 --------------------------------------------------------------------------------
 
-### By state
+### Performance Indicators at State Level
 
 ```{r, fig.height = 10}
 xstate <- reactive({
@@ -112,20 +200,42 @@ output$state_performance <- renderPlotly({
     geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(y = "%") +
-    facet_wrap( ~ State, ncol = 6) +
-    theme_bw()  
+    labs(title = input$chosen_year, y = "%")
+        
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  add_facets <- facet_wrap( ~ State, ncol = 6)
+
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + add_facets
+  } else {
+    z <- z + add_facets
+  }
+
+  z <- z + unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
   
   ggplotly(p = z)
 })
 
-plotlyOutput("state_performance")
+plotlyOutput(outputId = "state_performance")
 ```
 
 Row
 --------------------------------------------------------------------------------
 
-### By locality
+### Performance Indicators at Locality Level
 
 ```{r, fig.height = 10}
 xlocality <- reactive({
@@ -151,18 +261,155 @@ output$locality_performance <- renderPlotly({
     geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(y = "%") +
-    facet_wrap( ~ Locality, ncol = 6) +
-    theme_bw()  
+    labs(title = paste(input$state_name, input$chosen_year, sep = " "),
+         y = "%")    
+    
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  add_facets <- facet_wrap( ~ Locality, nrow = 3)
+
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + add_facets
+  } else {
+    z <- z + add_facets
+  }
+  
+  z <- z +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
   
   ggplotly(p = z)
 })
 
-plotlyOutput("locality_performance")
+plotlyOutput(outputId = "locality_performance")
 ```
 
 Responsiveness
 ================================================================================
+
+Row
+--------------------------------------------------------------------------------
+
+### Admissions at National Level
+
+```{r}
+admissions_defaulters <- reactive({
+  aggregate(cbind(`New Admissions`, Default) ~ Month + Year, 
+            data = monitoring, FUN = sum) %>% 
+    filter(Year == input$chosen_year) %>%
+    mutate(Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+})
+
+output$admissions <- renderPlotly({
+  z <- admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = Year)) +
+    geom_line(mapping = aes(y = `New Admissions`), colour = "blue") +
+    scale_y_continuous(limits = c(0, max(admissions_defaulters()[["New Admissions"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(admissions_defaulters()[["New Admissions"]]),
+                                    by = 5000)) +
+    labs(title = input$chosen_year) +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "admissions")
+```
+
+### Defaulters at National Level
+
+```{r}
+output$defaulters <- renderPlotly({
+  z <- admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = Year)) +
+    geom_line(mapping = aes(y = `Default`), colour = "red") +
+    scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(admissions_defaulters()[["Default"]]),
+                                    by = 500)) +
+    labs(title = input$chosen_year) +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "defaulters")
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Admissions at State Level
+
+```{r, fig.height = 8}
+state_admissions_defaulters <- reactive({
+  aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+            data = monitoring, FUN = sum) %>% 
+    filter(Year == input$chosen_year) %>%
+    mutate(Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+})
+
+output$state_admissions <- renderPlotly({
+  z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = `New Admissions`), colour = "blue") +
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["New Admissions"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["New Admissions"]]),
+                                    by = 1000)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "state_admissions")
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Defaulters at State Level
+
+```{r, fig.height = 8}
+output$state_defaulters <- renderPlotly({
+  z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["Default"]]),
+                                    by = 100)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "state_defaulters")
+```
 
 Case-finding
 ================================================================================
