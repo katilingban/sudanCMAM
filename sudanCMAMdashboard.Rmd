@@ -310,7 +310,9 @@ admissions_defaulters <- reactive({
     filter(Year == input$chosen_year) %>%
     mutate(Month = factor(x = Month, 
                           levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")),
+           `Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+           `Defaulters (smoothed)` = smooth_m3a3(x = Default))
 })
 
 output$admissions <- renderPlotly({
@@ -323,6 +325,19 @@ output$admissions <- renderPlotly({
                                     by = 5000)) +
     labs(title = input$chosen_year) +
     unicef_theme
+  
+  if(input$smooth) {
+    z <- admissions_defaulters() %>%
+      ggplot(mapping = aes(x = Month, group = Year)) +
+      geom_line(mapping = aes(y = `New Admissions`), colour = "blue") +
+      geom_line(mapping = aes(y = `Admissions (smoothed)`), colour = "gray90") +
+      scale_y_continuous(limits = c(0, max(admissions_defaulters()[["New Admissions"]])),
+                         breaks = seq(from = 0, 
+                                      to = max(admissions_defaulters()[["New Admissions"]]),
+                                      by = 5000)) +
+      labs(title = input$chosen_year) +
+      unicef_theme
+  }
   
   ggplotly(p = z)
 })
@@ -344,6 +359,19 @@ output$defaulters <- renderPlotly({
     labs(title = input$chosen_year) +
     unicef_theme
   
+  if(input$smooth) {
+    z <- admissions_defaulters() %>%
+      ggplot(mapping = aes(x = Month, group = Year)) +
+      geom_line(mapping = aes(y = `Default`), colour = "red") +
+      geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +
+      scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
+                         breaks = seq(from = 0, 
+                                      to = max(admissions_defaulters()[["Default"]]),
+                                      by = 500)) +
+      labs(title = input$chosen_year) +
+      unicef_theme    
+  }
+  
   ggplotly(p = z)
 })
 
@@ -362,7 +390,9 @@ state_admissions_defaulters <- reactive({
     filter(Year == input$chosen_year) %>%
     mutate(Month = factor(x = Month, 
                           levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")),
+           `Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+           `Defaulters (smoothed)` = smooth_m3a3(x = Default))
 })
 
 output$state_admissions <- renderPlotly({
@@ -378,6 +408,22 @@ output$state_admissions <- renderPlotly({
     unicef_theme +
     theme(axis.text.x = element_text(size = 8, angle = 90),
           axis.text.y = element_text(size = 8))  
+  
+  if(input$smooth) {
+      z <- state_admissions_defaulters() %>%
+        ggplot(mapping = aes(x = Month, group = State)) +
+        geom_line(mapping = aes(y = `New Admissions`), colour = "blue") +
+        geom_line(mapping = aes(y = `Admissions (smoothed)`), colour = "gray90") +
+        scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["New Admissions"]])),
+                           breaks = seq(from = 0, 
+                                        to = max(state_admissions_defaulters()[["New Admissions"]]),
+                                        by = 1000)) +    
+        labs(title = input$chosen_year) +
+        facet_wrap( ~ State, ncol = 6) +
+        unicef_theme +
+        theme(axis.text.x = element_text(size = 8, angle = 90),
+              axis.text.y = element_text(size = 8))
+  }
   
   ggplotly(p = z)
 })
@@ -404,6 +450,22 @@ output$state_defaulters <- renderPlotly({
     unicef_theme +
     theme(axis.text.x = element_text(size = 8, angle = 90),
           axis.text.y = element_text(size = 8))  
+  
+  if(input$smooth) {
+    z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +  
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["Default"]]),
+                                    by = 100)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  }
   
   ggplotly(p = z)
 })
