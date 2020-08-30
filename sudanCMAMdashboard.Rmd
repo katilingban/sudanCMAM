@@ -15,6 +15,8 @@ if(!require(flexdashboard)) install.packages("flexdashboard")
 if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(magrittr)) install.packages("magrittr")
 if(!require(plotly)) install.packages("plotly")
+if(!require(vistime)) install.packages("vistime")
+if(!require(lubridate)) install.packages("lubridate")
 if(!require(remotes)) install.packages("remotes")
 if(!require(squeacr)) remotes::install_github("rapidsurveys/squeacr")
 
@@ -22,7 +24,10 @@ library(flexdashboard)
 library(ggplot2)
 library(magrittr)
 library(plotly)
+library(vistime)
+library(lubridate)
 library(remotes)
+library(squeacr)
 
 ## Load UNICEF palette
 unicef_blue      <- "#1CABE2"
@@ -301,6 +306,23 @@ Responsiveness
 Row
 --------------------------------------------------------------------------------
 
+### Seasonal Calendar
+
+```{r}
+output$calendar <- renderPlotly({
+  seasonal_calendar %>%
+    filter(year(start) == input$chosen_year) %>%
+    
+    vistime()
+})
+
+plotlyOutput(outputId = "calendar")
+```
+
+
+Row
+--------------------------------------------------------------------------------
+
 ### Admissions at National Level
 
 ```{r}
@@ -345,6 +367,9 @@ output$admissions <- renderPlotly({
 
 plotlyOutput(outputId = "admissions")
 ```
+
+Row
+--------------------------------------------------------------------------------
 
 ### Defaulters at National Level
 
