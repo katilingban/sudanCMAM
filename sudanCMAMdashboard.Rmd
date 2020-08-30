@@ -476,6 +476,87 @@ output$state_defaulters <- renderPlotly({
 plotlyOutput(outputId = "state_defaulters")
 ```
 
+Row
+--------------------------------------------------------------------------------
+
+### Admissions at Locality Level
+
+```{r, fig.height = 8}
+locality_admissions_defaulters <- reactive({
+  monitoring %>% 
+    filter(Year == input$chosen_year,
+           State == input$state_name) %>%
+    mutate(Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))) %>%
+    group_by(Locality) %>%
+    arrange(Month, .by_group = TRUE) %>%
+    mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+           `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+})
+
+output$locality_admissions <- renderPlotly({
+  z <- locality_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = `New Admissions`), colour = "blue") +
+    labs(title = paste(input$state_name, input$chosen_year, sep = " ")) +
+    facet_wrap( ~ Locality, nrow = 3) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  
+  if(input$smooth) {
+      z <- locality_admissions_defaulters() %>%
+        ggplot(mapping = aes(x = Month, group = Locality)) +
+        geom_line(mapping = aes(y = `New Admissions`), colour = "blue") +
+        geom_line(mapping = aes(y = `Admissions (smoothed)`), colour = "gray90") +
+        labs(title = paste(input$state_name, input$chosen_year, sep = " ")) +
+        facet_wrap( ~ Locality, nrow = 3) +
+        unicef_theme +
+        theme(axis.text.x = element_text(size = 8, angle = 90),
+              axis.text.y = element_text(size = 8))
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "locality_admissions")
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Defaulters at Locality Level
+
+```{r, fig.height = 8}
+output$locality_defaulters <- renderPlotly({
+  z <- locality_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    labs(title = paste(input$state_name, input$chosen_year, sep = " ")) +
+    facet_wrap( ~ Locality, nrow = 3) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  
+  if(input$smooth) {
+      z <- locality_admissions_defaulters() %>%
+        ggplot(mapping = aes(x = Month, group = Locality)) +
+        geom_line(mapping = aes(y = `Default`), colour = "red") +
+        geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +
+        labs(title = paste(input$state_name, input$chosen_year, sep = " ")) +
+        facet_wrap( ~ Locality, nrow = 3) +
+        unicef_theme +
+        theme(axis.text.x = element_text(size = 8, angle = 90),
+              axis.text.y = element_text(size = 8))
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "locality_defaulters")
+```
+
 Case-finding
 ================================================================================
 
