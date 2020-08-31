@@ -4,7 +4,7 @@ runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
-    vertical_layout: fill
+    vertical_layout: scroll
     social: menu
     source_code: https://github.com/katilingban/sudanCMAM
     theme: cerulean
@@ -101,6 +101,33 @@ katilingban_theme <- theme_bw() +
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10),
         axis.ticks = element_line(colour = "gray50", size = 0.5))
+
+legend.format <- function (prefix = "", 
+                           suffix = "", 
+                           between = " &ndash; ", 
+                           digits = 3, 
+                           big.mark = ",", 
+                           transform = identity) {
+  formatNum <- function(x) {
+    format(round(transform(x), digits), trim = TRUE, 
+           scientific = FALSE, big.mark = big.mark)
+  }
+    function(type, ...) {
+        switch(type, numeric = (function(cuts) {
+            paste0(prefix, formatNum(cuts), suffix)
+        })(...), bin = (function(cuts) {
+            n = length(cuts)
+            paste0(prefix, formatNum(cuts[-n]), between, formatNum(cuts[-1]), 
+                suffix)
+        })(...), quantile = (function(cuts, p) {
+            n = length(cuts)
+            p = paste0(round(p * 100), "%")
+            cuts = paste0(formatNum(cuts[-n]), between, formatNum(cuts[-1]), suffix)
+        })(...), factor = (function(cuts) {
+            paste0(prefix, as.character(transform(cuts)), suffix)
+        })(...))
+    }
+}
 ```
 
 Sidebar {.sidebar}
@@ -142,12 +169,12 @@ checkboxInput(inputId = "smooth",
 Performance
 ================================================================================
 
-Row {.tabset .tabset-fade data-height=650}
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
 ### National
 
-```{r}
+```{r, fig.height = 6}
 x <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -321,7 +348,7 @@ Row
 
 ### State
 
-```{r}
+```{r, fig.height = 5}
 xstate_map <- reactive({
   xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
                data = monitoring, FUN = sum) %>% 
@@ -343,22 +370,112 @@ xstate_map <- reactive({
   state_map
 })
 
-mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+#output$sudanMap <- renderLeaflet({
+#  leaflet() %>%
+#    addTiles(urlTemplate = mapbox.terminal,
+#             attribution = "Map by <a href='http://www.mapbox.com/'>Mapbox</a>")
+#})
 
-pal <- colorNumeric(palette = mapPalette, domain = c(0, 100))
-
-output$state_performance_map <- renderLeaflet({
+output$statePerformanceMap <- renderLeaflet({
+  mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+  pal <- colorNumeric(palette = mapPalette, 
+                      domain = c(0, 100))
+  tooltip <- paste("<strong>", xstate_map()@data$State, 
+                   " State</strong><br/><strong>Cure Rate:</strong> ", 
+                   round(xstate_map()@data$`Cure Rate`, digits = 2), "%<br/>",
+                   input$chosen_month, " ", input$chosen_year, sep = "") %>%
+    lapply(FUN = htmltools::HTML)
+  
   leaflet() %>%
-    addTiles(urlTemplate = mapbox.street,
+    addTiles(urlTemplate = mapbox.terminal,
              attribution = "Map by <a href='http://www.mapbox.com/'>Mapbox</a>") %>%
-    addMiniMap(tile = mapbox.satellite, 
-               toggleDisplay = TRUE,
-               width = 100, height = 100) %>%
     addPolygons(data = xstate_map(),
-                fillColor = pal(xstate_map()$`Cure Rate`))
+                fillColor = pal(xstate_map()$`Cure Rate`),
+                weight = 2,
+                opacity = 1,
+                color = pal(xstate_map()$`Cure Rate`),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = tooltip,
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                         padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto"),
+                group = "Cure") %>%
+        addPolygons(data = xstate_map(),
+                    fillColor = pal(xstate_map()$`Defaulter Rate`),
+                    weight = 2,
+                    opacity = 1,
+                    color = pal(xstate_map()$`Defaulter Rate`),
+                    dashArray = "",
+                    fillOpacity = 0.8,
+                    highlight = highlightOptions(weight = 3,
+                                                 color = "#666",
+                                                 dashArray = "",
+                                                 fillOpacity = 0.7,
+                                                 bringToFront = TRUE),
+                    label = tooltip,
+                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                             padding = "3px 8px"),
+                                                textsize = "12px",
+                                                direction = "auto"),
+                    group = "Defaulter") %>%
+        addPolygons(data = xstate_map(),
+                    fillColor = pal(xstate_map()$`Death Rate`),
+                    weight = 2,
+                    opacity = 1,
+                    color = pal(xstate_map()$`Death Rate`),
+                    dashArray = "",
+                    fillOpacity = 0.8,
+                    highlight = highlightOptions(weight = 3,
+                                                 color = "#666",
+                                                 dashArray = "",
+                                                 fillOpacity = 0.7,
+                                                 bringToFront = TRUE),
+                    label = tooltip,
+                    labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                                textsize = "12px",
+                                                direction = "auto"),
+                    group = "Death") %>%
+        addPolygons(data = xstate_map(),
+                    fillColor = pal(xstate_map()$`Non-response Rate`),
+                    weight = 2,
+                    opacity = 1,
+                    color = pal(xstate_map()$`Non-response Rate`),
+                    dashArray = "",
+                    fillOpacity = 0.8,
+                    highlight = highlightOptions(weight = 3,
+                                                 color = "#666",
+                                                 dashArray = "",
+                                                 fillOpacity = 0.7,
+                                                 bringToFront = TRUE),
+                    label = tooltip,
+                    labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                                textsize = "12px",
+                                                direction = "auto"),
+                    group = "Non-response") %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend") %>%
+	  addLayersControl(baseGroups = c("Cure", "Defaulter", 
+	                                  "Death", "Non-response"),
+	                   position = "topleft",
+	                   options = layersControlOptions(collapsed = FALSE, 
+	                                                  autoZIndex = TRUE))
 })
 
-leafletOutput(outputId = "state_performance_map")
+leafletOutput(outputId = "statePerformanceMap")
 ```
 
 

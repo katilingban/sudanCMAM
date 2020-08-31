@@ -36,7 +36,7 @@ set1$Locality <- set1$Locality %>%
 set1 <- set1 %>%
   mutate(month = str_extract(string = set1$Month, pattern = "[a-zA-z]+"),
          year = paste(20, str_extract(string = set1$Month, pattern = "[0-9]+"), sep = "")) %>%
-  select(-Month)
+  dplyr::select(-Month)
 
 ## Clean up variable names
 names(set1) <- str_to_title(names(set1))
@@ -53,19 +53,18 @@ monitoring$State <- monitoring$State %>%
 ## Clean up localities names - Gazera
 unique(monitoring$Locality[monitoring$State == "Gazera"])
 
-monitoring$Locality[monitoring$State == "Gazera"] <- monitoring$Locality[monitoring$State == "Gazera"] %>%
-  str_replace_all(pattern = "Algurashi", replacement = "El Qurashi") %>%
-  str_replace_all(pattern = "Alkamlin", replacement = "El Kamlin") %>%
-  str_replace_all(pattern = "Almanagil|Almanagel", replacement = "El Manaqil") %>%
-  str_replace_all(pattern = "Ganop Algezira|South Gazira", replacement = "Ganub Elgazira") %>%
-  str_replace_all(pattern = "Medani Alkupra", replacement = "Greater Medani") %>%
-  str_replace_all(pattern = "Sharg Algezira", replacement = "Sharg El Gezira") %>%
-  str_replace_all(pattern = "Umalgura|Umalgora", replacement = "Um Elqura") %>%
-  str_replace_all(pattern = "Alhasahisa", replacement = "El Hassahisa") %>%
-  str_replace_all(pattern = "Almanagil|Almanagel", replacement = "El Manaqil") %>%
-  
-  ## Clean up localities names - Blue Nile
-  unique(monitoring$Locality[monitoring$State == "Blue Nile"])
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality == "Algurashi"] <- "El Qurashi"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality == "Alkamlin"] <- "El Kamlin"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality %in% c("Almanagil", "Almanagel")] <- "El Manaqil"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality %in% c("Ganop Algezira", "South Gazira")] <- "Ganub Elgazira"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality == "Medani Alkupra"] <- "Greater Medani"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality == "Sharg Algezira"] <- "Sharg El Gezira"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality %in% c("Umalgura", "Umalgora")] <- "Um Elqura"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality == "Alhasahisa"] <- "El Hassahisa"
+monitoring$Locality[monitoring$State == "Gazera" & monitoring$Locality %in% c("Almanagil", "Almanagel")] <- "El Manaqil"
+
+## Clean up localities names - Blue Nile
+unique(monitoring$Locality[monitoring$State == "Blue Nile"])
 
 monitoring$Locality[monitoring$State == "Blue Nile"] <- monitoring$Locality[monitoring$State == "Blue Nile"] %>%
   str_replace_all(pattern = "Al-Damazain|Aldamazain", replacement = "Ed Damazine") %>%
