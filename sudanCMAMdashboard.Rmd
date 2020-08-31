@@ -4,7 +4,7 @@ runtime: shiny
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
-    vertical_layout: scroll
+    vertical_layout: fill
     social: menu
     source_code: https://github.com/katilingban/sudanCMAM
     theme: cerulean
@@ -17,8 +17,11 @@ if(!require(magrittr)) install.packages("magrittr")
 if(!require(plotly)) install.packages("plotly")
 if(!require(vistime)) install.packages("vistime")
 if(!require(lubridate)) install.packages("lubridate")
+if(!require(leaflet)) install.packages("leaflet")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
 if(!require(remotes)) install.packages("remotes")
 if(!require(squeacr)) remotes::install_github("rapidsurveys/squeacr")
+if(!require(sudan)) remotes::install_github("spatialworks/sudan")
 
 library(flexdashboard)
 library(ggplot2)
@@ -26,8 +29,22 @@ library(magrittr)
 library(plotly)
 library(vistime)
 library(lubridate)
+library(leaflet)
+library(RColorBrewer)
 library(remotes)
 library(squeacr)
+library(sudan)
+
+## Create Mapbox base layer objects for leaflet mapping
+mapbox.satellite <- "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.street    <- "https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.dark      <- "https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.light     <- "https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.moonlight <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj3nban30001z2rpahc10c9ef/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.northstar <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj4ke832y4sng2spe2ds4fs55/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.standard  <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj5di36jn0gxg2rphjn3yetpt/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.decimal   <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj5ms1akt3pbi2smtcewsex9m/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.terminal  <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj6g0tzbd30kc2sph2wyh666m/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
 
 ## Load UNICEF palette
 unicef_blue      <- "#1CABE2"
@@ -90,6 +107,11 @@ Sidebar {.sidebar}
 ================================================================================
 
 ```{r}
+selectInput(inputId = "chosen_month",
+            label = "Select month",
+            choices = unique(monitoring$Month),
+            selected = NULL)
+
 selectInput(inputId = "chosen_year",
             label = "Select year",
             choices = unique(monitoring$Year),
@@ -120,10 +142,10 @@ checkboxInput(inputId = "smooth",
 Performance
 ================================================================================
 
-Row
+Row {.tabset .tabset-fade data-height=650}
 --------------------------------------------------------------------------------
 
-### Performance Indicators at National Level
+### National
 
 ```{r}
 x <- reactive({
@@ -176,12 +198,9 @@ output$performance <- renderPlotly({
 plotlyOutput(outputId = "performance")
 ```
 
-Row
---------------------------------------------------------------------------------
+### State
 
-### Performance Indicators at State Level
-
-```{r, fig.height = 10}
+```{r}
 xstate <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
                data = monitoring, FUN = sum) %>% 
@@ -237,12 +256,9 @@ output$state_performance <- renderPlotly({
 plotlyOutput(outputId = "state_performance")
 ```
 
-Row
---------------------------------------------------------------------------------
+### Locality
 
-### Performance Indicators at Locality Level
-
-```{r, fig.height = 10}
+```{r}
 xlocality <- reactive({
   monitoring %>% 
     calculate_performance() %>%
@@ -300,6 +316,55 @@ output$locality_performance <- renderPlotly({
 plotlyOutput(outputId = "locality_performance")
 ```
 
+Row
+--------------------------------------------------------------------------------
+
+### State
+
+```{r}
+xstate_map <- reactive({
+  xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+  state_map <- states
+  state_map@data <- merge(state_map@data, xx, 
+                          by.x = "State_En", 
+                          by.y = "State")
+  state_map
+})
+
+mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+
+pal <- colorNumeric(palette = mapPalette, domain = c(0, 100))
+
+output$state_performance_map <- renderLeaflet({
+  leaflet() %>%
+    addTiles(urlTemplate = mapbox.street,
+             attribution = "Map by <a href='http://www.mapbox.com/'>Mapbox</a>") %>%
+    addMiniMap(tile = mapbox.satellite, 
+               toggleDisplay = TRUE,
+               width = 100, height = 100) %>%
+    addPolygons(data = xstate_map(),
+                fillColor = pal(xstate_map()$`Cure Rate`))
+})
+
+leafletOutput(outputId = "state_performance_map")
+```
+
+
+### Locality
+
+
 Responsiveness
 ================================================================================
 
@@ -312,7 +377,6 @@ Row
 output$calendar <- renderPlotly({
   seasonal_calendar %>%
     filter(year(start) == input$chosen_year) %>%
-    
     vistime()
 })
 
