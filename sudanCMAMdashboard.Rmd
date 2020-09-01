@@ -174,7 +174,7 @@ Row {.tabset .tabset-fade}
 
 ### National
 
-```{r, fig.height = 6}
+```{r, fig.height = 8}
 x <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -378,22 +378,28 @@ xstate_map <- reactive({
 
 output$statePerformanceMap <- renderLeaflet({
   mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+  
   pal <- colorNumeric(palette = mapPalette, 
                       domain = c(0, 100))
-  tooltip <- paste("<strong>", xstate_map()@data$State, 
-                   " State</strong><br/><strong>Cure Rate:</strong> ", 
-                   round(xstate_map()@data$`Cure Rate`, digits = 2), "%<br/>",
-                   input$chosen_month, " ", input$chosen_year, sep = "") %>%
-    lapply(FUN = htmltools::HTML)
+  
+  palReverse <- colorNumeric(palette = mapPalette, 
+                             domain = c(0, 100),
+                             reverse = TRUE)
+  
+  palCure <- colorBin(palette = brewer.pal(n = 6, name = "RdYlGn"),
+                      domain = c(0, 100),
+                      bins = c(0, 75, 80, 85, 90, 95, 100))
+  
+
   
   leaflet() %>%
     addTiles(urlTemplate = mapbox.terminal,
              attribution = "Map by <a href='http://www.mapbox.com/'>Mapbox</a>") %>%
     addPolygons(data = xstate_map(),
-                fillColor = pal(xstate_map()$`Cure Rate`),
+                fillColor = palCure(xstate_map()$`Cure Rate`),
                 weight = 2,
                 opacity = 1,
-                color = pal(xstate_map()$`Cure Rate`),
+                color = palCure(xstate_map()$`Cure Rate`),
                 dashArray = "",
                 fillOpacity = 0.8,
                 highlight = highlightOptions(weight = 3,
@@ -401,17 +407,22 @@ output$statePerformanceMap <- renderLeaflet({
                                              dashArray = "",
                                              fillOpacity = 0.7,
                                              bringToFront = TRUE),
-                label = tooltip,
+                label = paste("<strong>", xstate_map()@data$State, 
+                              " State</strong><br/><strong>Cure Rate:</strong> ", 
+                              round(xstate_map()@data$`Cure Rate`, digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                          padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto"),
                 group = "Cure") %>%
         addPolygons(data = xstate_map(),
-                    fillColor = pal(xstate_map()$`Defaulter Rate`),
+                    fillColor = palReverse(xstate_map()$`Defaulter Rate`),
                     weight = 2,
                     opacity = 1,
-                    color = pal(xstate_map()$`Defaulter Rate`),
+                    color = palReverse(xstate_map()$`Defaulter Rate`),
                     dashArray = "",
                     fillOpacity = 0.8,
                     highlight = highlightOptions(weight = 3,
@@ -419,7 +430,12 @@ output$statePerformanceMap <- renderLeaflet({
                                                  dashArray = "",
                                                  fillOpacity = 0.7,
                                                  bringToFront = TRUE),
-                    label = tooltip,
+                    label = paste("<strong>", xstate_map()@data$State, 
+                                  " State</strong><br/><strong>Defaulter Rate:</strong> ", 
+                                  round(xstate_map()@data$`Defaulter Rate`, digits = 2), 
+                                  "%<br/>", input$chosen_month, " ", 
+                                  input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "12px",
@@ -437,7 +453,12 @@ output$statePerformanceMap <- renderLeaflet({
                                                  dashArray = "",
                                                  fillOpacity = 0.7,
                                                  bringToFront = TRUE),
-                    label = tooltip,
+                    label = paste("<strong>", xstate_map()@data$State, 
+                                  " State</strong><br/><strong>Death Rate:</strong> ", 
+                                  round(xstate_map()@data$`Death Rate`, digits = 2), 
+                                  "%<br/>", input$chosen_month, " ", 
+                                  input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
                     labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                                 textsize = "12px",
@@ -455,13 +476,18 @@ output$statePerformanceMap <- renderLeaflet({
                                                  dashArray = "",
                                                  fillOpacity = 0.7,
                                                  bringToFront = TRUE),
-                    label = tooltip,
+                    label = paste("<strong>", xstate_map()@data$State, 
+                                  " State</strong><br/><strong>Non-response Rate:</strong> ", 
+                                  round(xstate_map()@data$`Non-response Rate`, digits = 2), 
+                                  "%<br/>", input$chosen_month, " ", 
+                                  input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
                     labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                                 textsize = "12px",
                                                 direction = "auto"),
                     group = "Non-response") %>%
-    addLegend(pal = pal, 
+    addLegend(pal = palCure, 
               values = c(0, 100),
               title = paste(input$chosen_month, input$chosen_year, sep = " "),
               opacity = 0.7,
@@ -470,7 +496,7 @@ output$statePerformanceMap <- renderLeaflet({
               layerId = "legend") %>%
 	  addLayersControl(baseGroups = c("Cure", "Defaulter", 
 	                                  "Death", "Non-response"),
-	                   position = "topleft",
+	                   position = "topright",
 	                   options = layersControlOptions(collapsed = FALSE, 
 	                                                  autoZIndex = TRUE))
 })
