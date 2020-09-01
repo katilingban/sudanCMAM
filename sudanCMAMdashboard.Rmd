@@ -75,6 +75,7 @@ unicef_theme <- theme_bw() +
         legend.key.size = unit(x = 12, units = "points"),
         legend.spacing = unit(x = 4, units = "points"),
         legend.text = element_text(size =  12),
+        legend.position = "top",
         axis.line.x = element_line(colour = unicef_darkblue, size = 0.5),
         axis.text.x = element_text(size = 10, colour = unicef_darkblue),
         axis.title.x = element_text(size = 12, colour = unicef_blue),
@@ -217,10 +218,15 @@ x <- reactive({
 output$performance <- renderPlotly({
   z <- x() %>% 
     ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
-    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
-    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
-    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    scale_colour_manual(name = "",
+                        values = c("Cure Rate" = "darkgreen", 
+                                   "Death Rate" = "black", 
+                                   "Defaulter Rate" = "red", 
+                                   "Non-response Rate" = "gray70")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = input$chosen_year, y = "%")
