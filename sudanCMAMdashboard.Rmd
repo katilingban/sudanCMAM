@@ -17,8 +17,11 @@ if(!require(magrittr)) install.packages("magrittr")
 if(!require(plotly)) install.packages("plotly")
 if(!require(vistime)) install.packages("vistime")
 if(!require(lubridate)) install.packages("lubridate")
+if(!require(leaflet)) install.packages("leaflet")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
 if(!require(remotes)) install.packages("remotes")
 if(!require(squeacr)) remotes::install_github("rapidsurveys/squeacr")
+if(!require(sudan)) remotes::install_github("spatialworks/sudan")
 
 library(flexdashboard)
 library(ggplot2)
@@ -26,8 +29,22 @@ library(magrittr)
 library(plotly)
 library(vistime)
 library(lubridate)
+library(leaflet)
+library(RColorBrewer)
 library(remotes)
 library(squeacr)
+library(sudan)
+
+## Create Mapbox base layer objects for leaflet mapping
+mapbox.satellite <- "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.street    <- "https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.dark      <- "https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.light     <- "https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.moonlight <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj3nban30001z2rpahc10c9ef/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.northstar <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj4ke832y4sng2spe2ds4fs55/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.standard  <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj5di36jn0gxg2rphjn3yetpt/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.decimal   <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj5ms1akt3pbi2smtcewsex9m/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
+mapbox.terminal  <- "https://api.mapbox.com/styles/v1/ernestguevarra/cj6g0tzbd30kc2sph2wyh666m/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZXJuZXN0Z3VldmFycmEiLCJhIjoiejRRLXlZdyJ9.sqS1zi0rDH5CIzvcn9SXSg"
 
 ## Load UNICEF palette
 unicef_blue      <- "#1CABE2"
@@ -84,6 +101,33 @@ katilingban_theme <- theme_bw() +
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10),
         axis.ticks = element_line(colour = "gray50", size = 0.5))
+
+legend.format <- function (prefix = "", 
+                           suffix = "", 
+                           between = " &ndash; ", 
+                           digits = 3, 
+                           big.mark = ",", 
+                           transform = identity) {
+  formatNum <- function(x) {
+    format(round(transform(x), digits), trim = TRUE, 
+           scientific = FALSE, big.mark = big.mark)
+  }
+    function(type, ...) {
+        switch(type, numeric = (function(cuts) {
+            paste0(prefix, formatNum(cuts), suffix)
+        })(...), bin = (function(cuts) {
+            n = length(cuts)
+            paste0(prefix, formatNum(cuts[-n]), between, formatNum(cuts[-1]), 
+                suffix)
+        })(...), quantile = (function(cuts, p) {
+            n = length(cuts)
+            p = paste0(round(p * 100), "%")
+            cuts = paste0(formatNum(cuts[-n]), between, formatNum(cuts[-1]), suffix)
+        })(...), factor = (function(cuts) {
+            paste0(prefix, as.character(transform(cuts)), suffix)
+        })(...))
+    }
+}
 ```
 
 Sidebar {.sidebar}
@@ -98,6 +142,36 @@ selectInput(inputId = "chosen_year",
 selectInput(inputId = "state_name",
             label = "Select state",
             choices = unique(monitoring$State),
+            selected = NULL)
+```
+
+#### Spatial settings
+
+```{r}
+selectInput(inputId = "chosen_month",
+            label = "Select month",
+            choices = c("January" = "Jan",
+                        "February" = "Feb",
+                        "March" = "Mar",
+                        "April" = "Apr",
+                        "May" = "May",
+                        "June" = "Jun",
+                        "July" = "Jul",
+                        "August" = "Aug",
+                        "September" = "Sep",
+                        "October" = "Oct",
+                        "November" = "Nov",
+                        "December" = "Dec"),
+            selected = NULL)
+```
+
+```{r}
+selectInput(inputId = "indicator",
+            label = "Choose indicator to map",
+            choices = c("Responsiveness: Cure rate" = "Cure Rate",
+                        "Responsiveness: Defaulter rate" = "Defaulter Rate",
+                        "Responsiveness: Death rate" = "Death Rate",
+                        "Responsiveness: Non-response rate" = "Non-response Rate"),
             selected = NULL)
 ```
 
@@ -120,12 +194,12 @@ checkboxInput(inputId = "smooth",
 Performance
 ================================================================================
 
-Row
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
-### Performance Indicators at National Level
+### National
 
-```{r}
+```{r, fig.height = 8}
 x <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -176,12 +250,9 @@ output$performance <- renderPlotly({
 plotlyOutput(outputId = "performance")
 ```
 
-Row
---------------------------------------------------------------------------------
+### State
 
-### Performance Indicators at State Level
-
-```{r, fig.height = 10}
+```{r}
 xstate <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
                data = monitoring, FUN = sum) %>% 
@@ -237,12 +308,9 @@ output$state_performance <- renderPlotly({
 plotlyOutput(outputId = "state_performance")
 ```
 
-Row
---------------------------------------------------------------------------------
+### Locality
 
-### Performance Indicators at Locality Level
-
-```{r, fig.height = 10}
+```{r}
 xlocality <- reactive({
   monitoring %>% 
     calculate_performance() %>%
@@ -300,10 +368,574 @@ output$locality_performance <- renderPlotly({
 plotlyOutput(outputId = "locality_performance")
 ```
 
+Row
+--------------------------------------------------------------------------------
+
+### State
+
+```{r, fig.height = 5}
+xstate_map <- reactive({
+  xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+  state_map <- states
+  state_map@data <- merge(state_map@data, xx, 
+                          by.x = "State_En", 
+                          by.y = "State")
+  state_map
+})
+
+output$statePerformanceMap <- renderLeaflet({
+  leaflet() %>%
+    addTiles(urlTemplate = mapbox.terminal,
+             attribution = "Map by <a href='http://www.mapbox.com/'>Mapbox</a>")
+})
+
+observeEvent(input$indicator, {
+    xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>% 
+      calculate_performance() %>%
+      filter(Year == input$chosen_year,
+             Month == input$chosen_month) %>%
+      mutate(`Cure Rate` = cured_prop * 100,
+             `Defaulter Rate` = defaulter_prop * 100,
+             `Death Rate` = dead_prop * 100,
+             `Non-response Rate` = nr_prop * 100,
+             Month = factor(x = Month, 
+                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+    state_map <- states
+    state_map@data <- merge(state_map@data, xx, 
+                          by.x = "State_En", 
+                          by.y = "State")
+  
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("statePerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(state_map)[1, 1], lat1 = bbox(state_map)[2, 1],
+              lng2 = bbox(state_map)[1, 2], lat2 = bbox(state_map)[2, 2]) %>%
+    addPolygons(data = state_map,
+                fillColor = pal(state_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(state_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", state_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(state_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+observeEvent(input$chosen_month, {
+    xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>% 
+      calculate_performance() %>%
+      filter(Year == input$chosen_year,
+             Month == input$chosen_month) %>%
+      mutate(`Cure Rate` = cured_prop * 100,
+             `Defaulter Rate` = defaulter_prop * 100,
+             `Death Rate` = dead_prop * 100,
+             `Non-response Rate` = nr_prop * 100,
+             Month = factor(x = Month, 
+                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+    state_map <- states
+    state_map@data <- merge(state_map@data, xx, 
+                          by.x = "State_En", 
+                          by.y = "State")
+  
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("statePerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(state_map)[1, 1], lat1 = bbox(state_map)[2, 1],
+              lng2 = bbox(state_map)[1, 2], lat2 = bbox(state_map)[2, 2]) %>%
+    addPolygons(data = state_map,
+                fillColor = pal(state_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(state_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", state_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(state_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+observeEvent(input$chosen_year, {
+    xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>% 
+      calculate_performance() %>%
+      filter(Year == input$chosen_year,
+             Month == input$chosen_month) %>%
+      mutate(`Cure Rate` = cured_prop * 100,
+             `Defaulter Rate` = defaulter_prop * 100,
+             `Death Rate` = dead_prop * 100,
+             `Non-response Rate` = nr_prop * 100,
+             Month = factor(x = Month, 
+                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+    state_map <- states
+    state_map@data <- merge(state_map@data, xx, 
+                          by.x = "State_En", 
+                          by.y = "State")
+  
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("statePerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(state_map)[1, 1], lat1 = bbox(state_map)[2, 1],
+              lng2 = bbox(state_map)[1, 2], lat2 = bbox(state_map)[2, 2]) %>%
+    addPolygons(data = state_map,
+                fillColor = pal(state_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(state_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", state_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(state_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+leafletOutput(outputId = "statePerformanceMap")
+```
+
+### Locality
+
+```{r, fig.height = 5, eval = TRUE}
+output$localityPerformanceMap <- renderLeaflet({
+  leaflet() %>%
+    addTiles(urlTemplate = mapbox.terminal,
+             attribution = "Map by <a href='http://www.mapbox.com/'>Mapbox</a>")
+})
+
+observeEvent(input$indicator, {
+    xx <- monitoring %>% 
+      calculate_performance() %>%
+      filter(Year == input$chosen_year,
+             Month == input$chosen_month) %>%
+      mutate(`Cure Rate` = cured_prop * 100,
+             `Defaulter Rate` = defaulter_prop * 100,
+             `Death Rate` = dead_prop * 100,
+             `Non-response Rate` = nr_prop * 100,
+             Month = factor(x = Month, 
+                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+    locality_map <- localities
+    locality_map@data <- merge(locality_map@data, xx, 
+                               by.x = "Name_Engli", 
+                               by.y = "Locality",
+                               all.x = TRUE)
+    
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("localityPerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(locality_map)[1, 1], lat1 = bbox(locality_map)[2, 1],
+              lng2 = bbox(locality_map)[1, 2], lat2 = bbox(locality_map)[2, 2]) %>%
+    addPolygons(data = locality_map,
+                fillColor = pal(locality_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(locality_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", locality_map[["Name_Engli"]], 
+                              " Locality</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(locality_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+observeEvent(input$chosen_month, {
+    xx <- monitoring %>% 
+      calculate_performance() %>%
+      filter(Year == input$chosen_year,
+             Month == input$chosen_month) %>%
+      mutate(`Cure Rate` = cured_prop * 100,
+             `Defaulter Rate` = defaulter_prop * 100,
+             `Death Rate` = dead_prop * 100,
+             `Non-response Rate` = nr_prop * 100,
+             Month = factor(x = Month, 
+                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+    locality_map <- localities
+    locality_map@data <- merge(locality_map@data, xx, 
+                               by.x = "Name_Engli", 
+                               by.y = "Locality",
+                               all.x = TRUE)
+    
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("localityPerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(locality_map)[1, 1], lat1 = bbox(locality_map)[2, 1],
+              lng2 = bbox(locality_map)[1, 2], lat2 = bbox(locality_map)[2, 2]) %>%
+    addPolygons(data = locality_map,
+                fillColor = pal(locality_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(locality_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", locality_map[["Name_Engli"]], 
+                              " Locality</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(locality_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+observeEvent(input$chosen_year, {
+    xx <- monitoring %>% 
+      calculate_performance() %>%
+      filter(Year == input$chosen_year,
+             Month == input$chosen_month) %>%
+      mutate(`Cure Rate` = cured_prop * 100,
+             `Defaulter Rate` = defaulter_prop * 100,
+             `Death Rate` = dead_prop * 100,
+             `Non-response Rate` = nr_prop * 100,
+             Month = factor(x = Month, 
+                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+    locality_map <- localities
+    locality_map@data <- merge(locality_map@data, xx, 
+                               by.x = "Name_Engli", 
+                               by.y = "Locality",
+                               all.x = TRUE)
+    
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("localityPerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(locality_map)[1, 1], lat1 = bbox(locality_map)[2, 1],
+              lng2 = bbox(locality_map)[1, 2], lat2 = bbox(locality_map)[2, 2]) %>%
+    addPolygons(data = locality_map,
+                fillColor = pal(locality_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(locality_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", locality_map[["Name_Engli"]], 
+                              " Locality</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(locality_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                      lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+leafletOutput(outputId = "localityPerformanceMap")
+```
+
 Responsiveness
 ================================================================================
 
-Row
+<!---Row
 --------------------------------------------------------------------------------
 
 ### Seasonal Calendar
@@ -312,18 +944,17 @@ Row
 output$calendar <- renderPlotly({
   seasonal_calendar %>%
     filter(year(start) == input$chosen_year) %>%
-    
     vistime()
 })
 
 plotlyOutput(outputId = "calendar")
 ```
+--->
 
-
-Row
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
-### Admissions at National Level
+### Admissions - National
 
 ```{r}
 admissions_defaulters <- reactive({
@@ -368,46 +999,7 @@ output$admissions <- renderPlotly({
 plotlyOutput(outputId = "admissions")
 ```
 
-Row
---------------------------------------------------------------------------------
-
-### Defaulters at National Level
-
-```{r}
-output$defaulters <- renderPlotly({
-  z <- admissions_defaulters() %>%
-    ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Default`), colour = "red") +
-    scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
-                       breaks = seq(from = 0, 
-                                    to = max(admissions_defaulters()[["Default"]]),
-                                    by = 500)) +
-    labs(title = input$chosen_year) +
-    unicef_theme
-  
-  if(input$smooth) {
-    z <- admissions_defaulters() %>%
-      ggplot(mapping = aes(x = Month, group = Year)) +
-      geom_line(mapping = aes(y = `Default`), colour = "red") +
-      geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +
-      scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
-                         breaks = seq(from = 0, 
-                                      to = max(admissions_defaulters()[["Default"]]),
-                                      by = 500)) +
-      labs(title = input$chosen_year) +
-      unicef_theme    
-  }
-  
-  ggplotly(p = z)
-})
-
-plotlyOutput(outputId = "defaulters")
-```
-
-Row
---------------------------------------------------------------------------------
-
-### Admissions at State Level
+### Admissions - State
 
 ```{r, fig.height = 8}
 state_admissions_defaulters <- reactive({
@@ -459,52 +1051,7 @@ output$state_admissions <- renderPlotly({
 plotlyOutput(outputId = "state_admissions")
 ```
 
-Row
---------------------------------------------------------------------------------
-
-### Defaulters at State Level
-
-```{r, fig.height = 8}
-output$state_defaulters <- renderPlotly({
-  z <- state_admissions_defaulters() %>%
-    ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = Default), colour = "red") +
-    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
-                       breaks = seq(from = 0, 
-                                    to = max(state_admissions_defaulters()[["Default"]]),
-                                    by = 100)) +    
-    labs(title = input$chosen_year) +
-    facet_wrap( ~ State, ncol = 6) +
-    unicef_theme +
-    theme(axis.text.x = element_text(size = 8, angle = 90),
-          axis.text.y = element_text(size = 8))  
-  
-  if(input$smooth) {
-    z <- state_admissions_defaulters() %>%
-    ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = Default), colour = "red") +
-    geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +  
-    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
-                       breaks = seq(from = 0, 
-                                    to = max(state_admissions_defaulters()[["Default"]]),
-                                    by = 100)) +    
-    labs(title = input$chosen_year) +
-    facet_wrap( ~ State, ncol = 6) +
-    unicef_theme +
-    theme(axis.text.x = element_text(size = 8, angle = 90),
-          axis.text.y = element_text(size = 8))  
-  }
-  
-  ggplotly(p = z)
-})
-
-plotlyOutput(outputId = "state_defaulters")
-```
-
-Row
---------------------------------------------------------------------------------
-
-### Admissions at Locality Level
+### Admissions - Locality
 
 ```{r, fig.height = 8}
 locality_admissions_defaulters <- reactive({
@@ -548,10 +1095,82 @@ output$locality_admissions <- renderPlotly({
 plotlyOutput(outputId = "locality_admissions")
 ```
 
-Row
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
-### Defaulters at Locality Level
+### Defaulters - National
+
+```{r}
+output$defaulters <- renderPlotly({
+  z <- admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = Year)) +
+    geom_line(mapping = aes(y = `Default`), colour = "red") +
+    scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(admissions_defaulters()[["Default"]]),
+                                    by = 500)) +
+    labs(title = input$chosen_year) +
+    unicef_theme
+  
+  if(input$smooth) {
+    z <- admissions_defaulters() %>%
+      ggplot(mapping = aes(x = Month, group = Year)) +
+      geom_line(mapping = aes(y = `Default`), colour = "red") +
+      geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +
+      scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
+                         breaks = seq(from = 0, 
+                                      to = max(admissions_defaulters()[["Default"]]),
+                                      by = 500)) +
+      labs(title = input$chosen_year) +
+      unicef_theme    
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "defaulters")
+```
+
+### Defaulters - State
+
+```{r, fig.height = 8}
+output$state_defaulters <- renderPlotly({
+  z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["Default"]]),
+                                    by = 100)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  
+  if(input$smooth) {
+    z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +  
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["Default"]]),
+                                    by = 100)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "state_defaulters")
+```
+
+### Defaulters - Locality
 
 ```{r, fig.height = 8}
 output$locality_defaulters <- renderPlotly({
