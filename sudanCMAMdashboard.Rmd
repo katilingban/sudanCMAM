@@ -935,10 +935,10 @@ leafletOutput(outputId = "localityPerformanceMap")
 Responsiveness
 ================================================================================
 
-Row
+<!---Row
 --------------------------------------------------------------------------------
 
-<!---### Seasonal Calendar
+### Seasonal Calendar
 
 ```{r}
 output$calendar <- renderPlotly({
@@ -951,10 +951,10 @@ plotlyOutput(outputId = "calendar")
 ```
 --->
 
-Row
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
-### Admissions at National Level
+### Admissions - National
 
 ```{r}
 admissions_defaulters <- reactive({
@@ -999,46 +999,7 @@ output$admissions <- renderPlotly({
 plotlyOutput(outputId = "admissions")
 ```
 
-Row
---------------------------------------------------------------------------------
-
-### Defaulters at National Level
-
-```{r}
-output$defaulters <- renderPlotly({
-  z <- admissions_defaulters() %>%
-    ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Default`), colour = "red") +
-    scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
-                       breaks = seq(from = 0, 
-                                    to = max(admissions_defaulters()[["Default"]]),
-                                    by = 500)) +
-    labs(title = input$chosen_year) +
-    unicef_theme
-  
-  if(input$smooth) {
-    z <- admissions_defaulters() %>%
-      ggplot(mapping = aes(x = Month, group = Year)) +
-      geom_line(mapping = aes(y = `Default`), colour = "red") +
-      geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +
-      scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
-                         breaks = seq(from = 0, 
-                                      to = max(admissions_defaulters()[["Default"]]),
-                                      by = 500)) +
-      labs(title = input$chosen_year) +
-      unicef_theme    
-  }
-  
-  ggplotly(p = z)
-})
-
-plotlyOutput(outputId = "defaulters")
-```
-
-Row
---------------------------------------------------------------------------------
-
-### Admissions at State Level
+### Admissions - State
 
 ```{r, fig.height = 8}
 state_admissions_defaulters <- reactive({
@@ -1090,52 +1051,7 @@ output$state_admissions <- renderPlotly({
 plotlyOutput(outputId = "state_admissions")
 ```
 
-Row
---------------------------------------------------------------------------------
-
-### Defaulters at State Level
-
-```{r, fig.height = 8}
-output$state_defaulters <- renderPlotly({
-  z <- state_admissions_defaulters() %>%
-    ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = Default), colour = "red") +
-    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
-                       breaks = seq(from = 0, 
-                                    to = max(state_admissions_defaulters()[["Default"]]),
-                                    by = 100)) +    
-    labs(title = input$chosen_year) +
-    facet_wrap( ~ State, ncol = 6) +
-    unicef_theme +
-    theme(axis.text.x = element_text(size = 8, angle = 90),
-          axis.text.y = element_text(size = 8))  
-  
-  if(input$smooth) {
-    z <- state_admissions_defaulters() %>%
-    ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = Default), colour = "red") +
-    geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +  
-    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
-                       breaks = seq(from = 0, 
-                                    to = max(state_admissions_defaulters()[["Default"]]),
-                                    by = 100)) +    
-    labs(title = input$chosen_year) +
-    facet_wrap( ~ State, ncol = 6) +
-    unicef_theme +
-    theme(axis.text.x = element_text(size = 8, angle = 90),
-          axis.text.y = element_text(size = 8))  
-  }
-  
-  ggplotly(p = z)
-})
-
-plotlyOutput(outputId = "state_defaulters")
-```
-
-Row
---------------------------------------------------------------------------------
-
-### Admissions at Locality Level
+### Admissions - Locality
 
 ```{r, fig.height = 8}
 locality_admissions_defaulters <- reactive({
@@ -1179,10 +1095,82 @@ output$locality_admissions <- renderPlotly({
 plotlyOutput(outputId = "locality_admissions")
 ```
 
-Row
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
-### Defaulters at Locality Level
+### Defaulters - National
+
+```{r}
+output$defaulters <- renderPlotly({
+  z <- admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = Year)) +
+    geom_line(mapping = aes(y = `Default`), colour = "red") +
+    scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(admissions_defaulters()[["Default"]]),
+                                    by = 500)) +
+    labs(title = input$chosen_year) +
+    unicef_theme
+  
+  if(input$smooth) {
+    z <- admissions_defaulters() %>%
+      ggplot(mapping = aes(x = Month, group = Year)) +
+      geom_line(mapping = aes(y = `Default`), colour = "red") +
+      geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +
+      scale_y_continuous(limits = c(0, max(admissions_defaulters()[["Default"]])),
+                         breaks = seq(from = 0, 
+                                      to = max(admissions_defaulters()[["Default"]]),
+                                      by = 500)) +
+      labs(title = input$chosen_year) +
+      unicef_theme    
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "defaulters")
+```
+
+### Defaulters - State
+
+```{r, fig.height = 8}
+output$state_defaulters <- renderPlotly({
+  z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["Default"]]),
+                                    by = 100)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  
+  if(input$smooth) {
+    z <- state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = Month, group = State)) +
+    geom_line(mapping = aes(y = Default), colour = "red") +
+    geom_line(mapping = aes(y = `Defaulters (smoothed)`), colour = "gray90") +  
+    scale_y_continuous(limits = c(0, max(state_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(state_admissions_defaulters()[["Default"]]),
+                                    by = 100)) +    
+    labs(title = input$chosen_year) +
+    facet_wrap( ~ State, ncol = 6) +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))  
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "state_defaulters")
+```
+
+### Defaulters - Locality
 
 ```{r, fig.height = 8}
 output$locality_defaulters <- renderPlotly({
