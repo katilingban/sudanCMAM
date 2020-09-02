@@ -214,7 +214,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
     caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
   )
 })
@@ -236,7 +236,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
     caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
   )
 })
@@ -258,7 +258,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
     caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
   )
 })
@@ -280,7 +280,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
     caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
   )
 })
@@ -472,27 +472,6 @@ Row
 ### State
 
 ```{r, fig.height = 5}
-xstate_map <- reactive({
-  xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
-               data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year,
-           Month == input$chosen_month) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
-           Month = factor(x = Month, 
-                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
-  
-  state_map <- states
-  state_map@data <- merge(state_map@data, xx, 
-                          by.x = "State_En", 
-                          by.y = "State")
-  state_map
-})
-
 output$statePerformanceMap <- renderLeaflet({
   leaflet() %>%
     addTiles(urlTemplate = mapbox.terminal,
@@ -513,10 +492,12 @@ observeEvent(input$indicator, {
                             levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
-    state_map <- states
-    state_map@data <- merge(state_map@data, xx, 
+  state_map <- states
+  state_map@data <- merge(state_map@data, xx, 
                           by.x = "State_En", 
                           by.y = "State")
+  
+  state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -599,10 +580,12 @@ observeEvent(input$chosen_month, {
                             levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
-    state_map <- states
-    state_map@data <- merge(state_map@data, xx, 
+  state_map <- states
+  state_map@data <- merge(state_map@data, xx, 
                           by.x = "State_En", 
                           by.y = "State")
+  
+  state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -685,10 +668,12 @@ observeEvent(input$chosen_year, {
                             levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
-    state_map <- states
-    state_map@data <- merge(state_map@data, xx, 
+  state_map <- states
+  state_map@data <- merge(state_map@data, xx, 
                           by.x = "State_En", 
                           by.y = "State")
+  
+  state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -788,6 +773,8 @@ observeEvent(input$indicator, {
                                by.y = "Locality",
                                all.x = TRUE)
     
+    locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
+    
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
@@ -874,6 +861,8 @@ observeEvent(input$chosen_month, {
                                by.y = "Locality",
                                all.x = TRUE)
     
+    locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
+    
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
@@ -959,6 +948,8 @@ observeEvent(input$chosen_year, {
                                by.x = "Name_Engli", 
                                by.y = "Locality",
                                all.x = TRUE)
+    
+    locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]  
     
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
