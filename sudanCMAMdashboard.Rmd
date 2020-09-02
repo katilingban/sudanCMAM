@@ -195,6 +195,98 @@ checkboxInput(inputId = "smooth",
 Performance
 ================================================================================
 
+Row
+--------------------------------------------------------------------------------
+
+### Cure Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
+  )
+})
+```
+
+### Defaulter Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
+  )
+})
+```
+
+### Death Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
+  )
+})
+```
+
+### Non-response Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
+  )
+})
+```
+
+
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
