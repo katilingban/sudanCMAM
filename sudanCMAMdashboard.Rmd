@@ -75,6 +75,7 @@ unicef_theme <- theme_bw() +
         legend.key.size = unit(x = 12, units = "points"),
         legend.spacing = unit(x = 4, units = "points"),
         legend.text = element_text(size =  12),
+        legend.position = "top",
         axis.line.x = element_line(colour = unicef_darkblue, size = 0.5),
         axis.text.x = element_text(size = 10, colour = unicef_darkblue),
         axis.title.x = element_text(size = 12, colour = unicef_blue),
@@ -194,6 +195,98 @@ checkboxInput(inputId = "smooth",
 Performance
 ================================================================================
 
+Row
+--------------------------------------------------------------------------------
+
+### Cure Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
+  )
+})
+```
+
+### Defaulter Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
+  )
+})
+```
+
+### Death Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
+  )
+})
+```
+
+### Non-response Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
+    icon = "fa-area-chart",
+    color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
+  )
+})
+```
+
+
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
@@ -217,10 +310,15 @@ x <- reactive({
 output$performance <- renderPlotly({
   z <- x() %>% 
     ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
-    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
-    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
-    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    scale_colour_manual(name = "",
+                        values = c("Cure Rate" = "darkgreen", 
+                                   "Death Rate" = "black", 
+                                   "Defaulter Rate" = "red", 
+                                   "Non-response Rate" = "gray70")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = input$chosen_year, y = "%")
