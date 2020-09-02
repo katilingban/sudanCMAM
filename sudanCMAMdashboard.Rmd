@@ -214,7 +214,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
     caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
   )
 })
@@ -236,7 +236,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
     caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
   )
 })
@@ -258,7 +258,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
     caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
   )
 })
@@ -280,7 +280,7 @@ renderValueBox({
   valueBox(
     value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
     caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
-    icon = "fa-area-chart",
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
     color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
   )
 })
