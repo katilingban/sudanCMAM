@@ -479,18 +479,18 @@ output$statePerformanceMap <- renderLeaflet({
 })
 
 observeEvent(input$indicator, {
-    xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
-               data = monitoring, FUN = sum) %>% 
-      calculate_performance() %>%
-      filter(Year == input$chosen_year,
-             Month == input$chosen_month) %>%
-      mutate(`Cure Rate` = cured_prop * 100,
-             `Defaulter Rate` = defaulter_prop * 100,
-             `Death Rate` = dead_prop * 100,
-             `Non-response Rate` = nr_prop * 100,
-             Month = factor(x = Month, 
-                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+                  data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
   state_map <- states
   state_map@data <- merge(state_map@data, xx, 
@@ -552,7 +552,7 @@ observeEvent(input$indicator, {
                               round(state_map[[input$indicator]], digits = 2), 
                               "%<br/>", input$chosen_month, " ", 
                               input$chosen_year, sep = "") %>%
-                      lapply(FUN = htmltools::HTML),
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                             textsize = "12px",
@@ -567,18 +567,18 @@ observeEvent(input$indicator, {
 })
 
 observeEvent(input$chosen_month, {
-    xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
-               data = monitoring, FUN = sum) %>% 
-      calculate_performance() %>%
-      filter(Year == input$chosen_year,
-             Month == input$chosen_month) %>%
-      mutate(`Cure Rate` = cured_prop * 100,
-             `Defaulter Rate` = defaulter_prop * 100,
-             `Death Rate` = dead_prop * 100,
-             `Non-response Rate` = nr_prop * 100,
-             Month = factor(x = Month, 
-                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+                  data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
   state_map <- states
   state_map@data <- merge(state_map@data, xx, 
@@ -640,7 +640,7 @@ observeEvent(input$chosen_month, {
                               round(state_map[[input$indicator]], digits = 2), 
                               "%<br/>", input$chosen_month, " ", 
                               input$chosen_year, sep = "") %>%
-                      lapply(FUN = htmltools::HTML),
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                             textsize = "12px",
@@ -655,18 +655,18 @@ observeEvent(input$chosen_month, {
 })
 
 observeEvent(input$chosen_year, {
-    xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
-               data = monitoring, FUN = sum) %>% 
-      calculate_performance() %>%
-      filter(Year == input$chosen_year,
-             Month == input$chosen_month) %>%
-      mutate(`Cure Rate` = cured_prop * 100,
-             `Defaulter Rate` = defaulter_prop * 100,
-             `Death Rate` = dead_prop * 100,
-             `Non-response Rate` = nr_prop * 100,
-             Month = factor(x = Month, 
-                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  xx <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+                  data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
   state_map <- states
   state_map@data <- merge(state_map@data, xx, 
@@ -728,7 +728,7 @@ observeEvent(input$chosen_year, {
                               round(state_map[[input$indicator]], digits = 2), 
                               "%<br/>", input$chosen_month, " ", 
                               input$chosen_year, sep = "") %>%
-                      lapply(FUN = htmltools::HTML),
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                             textsize = "12px",
@@ -755,25 +755,25 @@ output$localityPerformanceMap <- renderLeaflet({
 })
 
 observeEvent(input$indicator, {
-    xx <- monitoring %>% 
-      calculate_performance() %>%
-      filter(Year == input$chosen_year,
-             Month == input$chosen_month) %>%
-      mutate(`Cure Rate` = cured_prop * 100,
-             `Defaulter Rate` = defaulter_prop * 100,
-             `Death Rate` = dead_prop * 100,
-             `Non-response Rate` = nr_prop * 100,
-             Month = factor(x = Month, 
-                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  xx <- monitoring %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
-    locality_map <- localities
-    locality_map@data <- merge(locality_map@data, xx, 
-                               by.x = "Name_Engli", 
-                               by.y = "Locality",
-                               all.x = TRUE)
+  locality_map <- localities
+  locality_map@data <- merge(locality_map@data, xx, 
+                             by.x = "Name_Engli", 
+                             by.y = "Locality",
+                             all.x = TRUE)
     
-    locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
+  locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
     
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -823,12 +823,14 @@ observeEvent(input$indicator, {
                                              fillOpacity = 0.7,
                                              bringToFront = TRUE),
                 label = paste("<strong>", locality_map[["Name_Engli"]], 
-                              " Locality</strong><br/><strong>", input$indicator,
+                              " Locality</strong><br/><strong>", 
+                              locality_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
                               ":</strong> ", 
                               round(locality_map[[input$indicator]], digits = 2), 
                               "%<br/>", input$chosen_month, " ", 
                               input$chosen_year, sep = "") %>%
-                      lapply(FUN = htmltools::HTML),
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                             textsize = "12px",
@@ -843,25 +845,25 @@ observeEvent(input$indicator, {
 })
 
 observeEvent(input$chosen_month, {
-    xx <- monitoring %>% 
-      calculate_performance() %>%
-      filter(Year == input$chosen_year,
-             Month == input$chosen_month) %>%
-      mutate(`Cure Rate` = cured_prop * 100,
-             `Defaulter Rate` = defaulter_prop * 100,
-             `Death Rate` = dead_prop * 100,
-             `Non-response Rate` = nr_prop * 100,
-             Month = factor(x = Month, 
-                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  xx <- monitoring %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
-    locality_map <- localities
-    locality_map@data <- merge(locality_map@data, xx, 
-                               by.x = "Name_Engli", 
-                               by.y = "Locality",
-                               all.x = TRUE)
+  locality_map <- localities
+  locality_map@data <- merge(locality_map@data, xx, 
+                             by.x = "Name_Engli", 
+                             by.y = "Locality",
+                             all.x = TRUE)
     
-    locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
+  locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
     
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -911,12 +913,14 @@ observeEvent(input$chosen_month, {
                                              fillOpacity = 0.7,
                                              bringToFront = TRUE),
                 label = paste("<strong>", locality_map[["Name_Engli"]], 
-                              " Locality</strong><br/><strong>", input$indicator,
+                              " Locality</strong><br/><strong>", 
+                              locality_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
                               ":</strong> ", 
                               round(locality_map[[input$indicator]], digits = 2), 
                               "%<br/>", input$chosen_month, " ", 
                               input$chosen_year, sep = "") %>%
-                      lapply(FUN = htmltools::HTML),
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                             textsize = "12px",
@@ -931,25 +935,25 @@ observeEvent(input$chosen_month, {
 })
 
 observeEvent(input$chosen_year, {
-    xx <- monitoring %>% 
-      calculate_performance() %>%
-      filter(Year == input$chosen_year,
-             Month == input$chosen_month) %>%
-      mutate(`Cure Rate` = cured_prop * 100,
-             `Defaulter Rate` = defaulter_prop * 100,
-             `Death Rate` = dead_prop * 100,
-             `Non-response Rate` = nr_prop * 100,
-             Month = factor(x = Month, 
-                            levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  xx <- monitoring %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
-    locality_map <- localities
-    locality_map@data <- merge(locality_map@data, xx, 
-                               by.x = "Name_Engli", 
-                               by.y = "Locality",
-                               all.x = TRUE)
+  locality_map <- localities
+  locality_map@data <- merge(locality_map@data, xx, 
+                             by.x = "Name_Engli", 
+                             by.y = "Locality",
+                             all.x = TRUE)
     
-    locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]  
+  locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]  
     
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -999,12 +1003,14 @@ observeEvent(input$chosen_year, {
                                              fillOpacity = 0.7,
                                              bringToFront = TRUE),
                 label = paste("<strong>", locality_map[["Name_Engli"]], 
-                              " Locality</strong><br/><strong>", input$indicator,
+                              " Locality</strong><br/><strong>", 
+                              locality_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
                               ":</strong> ", 
                               round(locality_map[[input$indicator]], digits = 2), 
                               "%<br/>", input$chosen_month, " ", 
                               input$chosen_year, sep = "") %>%
-                      lapply(FUN = htmltools::HTML),
+                  lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
                                                              padding = "3px 8px"),
                                             textsize = "12px",
