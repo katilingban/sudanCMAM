@@ -138,15 +138,27 @@ Sidebar {.sidebar}
 ================================================================================
 
 ```{r}
+selectInput(inputId = "state_name",
+            label = "Select state",
+            choices = unique(monitoring$State),
+            selected = NULL)
+
+output$select_locality <- renderUI({
+  selectInput(inputId = "locality_name",
+              label = "Select locality",
+              choices = monitoring$Locality[monitoring$State == input$state_name],
+              selected = monitoring$Locality[monitoring$State == input$state_name][1])
+})
+
+uiOutput("select_locality")
+
 selectInput(inputId = "chosen_year",
             label = "Select year",
             choices = unique(monitoring$Year),
             selected = NULL)
 
-selectInput(inputId = "state_name",
-            label = "Select state",
-            choices = unique(monitoring$State),
-            selected = NULL)
+hr()
+br()
 ```
 
 #### Spatial settings
@@ -189,6 +201,9 @@ selectInput(inputId = "map_tiles",
                         "Standard" = "mapbox.standard",
                         "Decmial" = "mapbox.decimal"),
             selected = "map.terminal")
+
+hr()
+br()
 ```
 
 #### Performance settings
@@ -197,6 +212,9 @@ selectInput(inputId = "map_tiles",
 checkboxInput(inputId = "standards",
               label = "Show Sphere standards",
               value = FALSE)
+
+hr()
+br()
 ```
 
 #### Responsiveness settings
@@ -307,6 +325,239 @@ renderValueBox({
 })
 ```
 
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### National
+
+```{r}
+xOverall <- reactive({
+  aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           MonthYear = paste(Month, Year, sep = " "),
+           MonthYear = factor(x = MonthYear, 
+                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2019"))))
+})
+
+output$performanceOverall <- renderPlotly({
+  z <- xOverall() %>% 
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    scale_colour_manual(name = "",
+                        values = c("Cure Rate" = "darkgreen", 
+                                   "Death Rate" = "black", 
+                                   "Defaulter Rate" = "red", 
+                                   "Non-response Rate" = "gray70")) +
+    scale_y_continuous(limits = c(0, 100),
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = "Performance over time - 2016 to 2019", y = "%", x = "")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + 
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 90),
+            axis.text.y = element_text(size = 8))
+  } else {
+    z <- z + 
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 90),
+            axis.text.y = element_text(size = 8))
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "performanceOverall")
+```
+
+### State
+
+```{r}
+xStateOverall <- reactive({
+  aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(State == input$state_name) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           MonthYear = paste(Month, Year, sep = " "),
+           MonthYear = factor(x = MonthYear, 
+                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2019"))))
+})
+
+output$performanceStateOverall <- renderPlotly({
+  z <- xStateOverall() %>% 
+    ggplot(mapping = aes(x = MonthYear, group = State)) +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    scale_colour_manual(name = "",
+                        values = c("Cure Rate" = "darkgreen", 
+                                   "Death Rate" = "black", 
+                                   "Defaulter Rate" = "red", 
+                                   "Non-response Rate" = "gray70")) +
+    scale_y_continuous(limits = c(0, 100),
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = paste("Performance over time - 2016 to 2019 - ", 
+                       input$state_name, " State", sep = ""),
+         y = "%", x = "")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + 
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 90),
+            axis.text.y = element_text(size = 8))
+  } else {
+    z <- z + 
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 90),
+            axis.text.y = element_text(size = 8))
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "performanceStateOverall")
+```
+
+### Locality
+
+```{r}
+xLocalityOverall <- reactive({
+  req(input$locality_name)
+  monitoring %>% 
+    calculate_performance() %>%
+    filter(State == input$state_name,
+           Locality == input$locality_name) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           MonthYear = paste(Month, Year, sep = " "),
+           MonthYear = factor(x = MonthYear, 
+                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2019"))))
+})
+
+output$performanceLocalityOverall <- renderPlotly({
+  z <- xLocalityOverall() %>% 
+    ggplot(mapping = aes(x = MonthYear, group = State)) +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    scale_colour_manual(name = "",
+                        values = c("Cure Rate" = "darkgreen", 
+                                   "Death Rate" = "black", 
+                                   "Defaulter Rate" = "red", 
+                                   "Non-response Rate" = "gray70")) +
+    scale_y_continuous(limits = c(0, 100),
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = paste("Performance over time - 2016 to 2019 - ",
+                       input$locality_name, " Locality, ",
+                       input$state_name, " State", sep = ""),
+         y = "%", x = "")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + 
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 90),
+            axis.text.y = element_text(size = 8))
+  } else {
+    z <- z + 
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 90),
+            axis.text.y = element_text(size = 8))
+  }
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "performanceLocalityOverall")
+```
+
 
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
@@ -331,18 +582,14 @@ x <- reactive({
 output$performance <- renderPlotly({
   z <- x() %>% 
     ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
-    scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray70")) +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(title = input$chosen_year, y = "%")
+    labs(title = paste("Performance over time - Year ", input$chosen_year, sep = ""),
+         y = "%", x = "")
   
   sphere_cure <- geom_hline(yintercept = 75, 
                             colour = "darkgreen", 
@@ -395,7 +642,8 @@ output$state_performance <- renderPlotly({
     geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(title = input$chosen_year, y = "%")
+    labs(title = paste("Performance over time by state - Year ", input$chosen_year, sep = ""), 
+         y = "%", x = "")
         
   sphere_cure <- geom_hline(yintercept = 75, 
                             colour = "darkgreen", 
@@ -453,8 +701,9 @@ output$locality_performance <- renderPlotly({
     geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(title = paste(input$state_name, input$chosen_year, sep = " "),
-         y = "%")    
+    labs(title = paste("Performance over time in ", input$state_name, 
+                       " State by locality - Year ", input$chosen_year, sep = ""),
+         y = "%", x = "")
     
   sphere_cure <- geom_hline(yintercept = 75, 
                             colour = "darkgreen", 
@@ -490,7 +739,7 @@ plotlyOutput(outputId = "locality_performance")
 Row
 --------------------------------------------------------------------------------
 
-### State
+### Map of performance by state for a given month and year
 
 ```{r, fig.height = 5}
 output$statePerformanceMap <- renderLeaflet({
@@ -770,7 +1019,7 @@ observeEvent(input$chosen_year, {
 leafletOutput(outputId = "statePerformanceMap")
 ```
 
-### Locality
+### Map of performance by locality for a given state, month and year
 
 ```{r, fig.height = 5, eval = TRUE}
 output$localityPerformanceMap <- renderLeaflet({
@@ -785,9 +1034,10 @@ observeEvent(input$map_tiles, {
 
 observeEvent(input$indicator, {
   xx <- monitoring %>% 
-    calculate_performance() %>%
     filter(Year == input$chosen_year,
-           Month == input$chosen_month) %>%
+           Month == input$chosen_month,
+           State == input$state_name) %>%
+    calculate_performance() %>%
     mutate(`Cure Rate` = cured_prop * 100,
            `Defaulter Rate` = defaulter_prop * 100,
            `Death Rate` = dead_prop * 100,
@@ -797,13 +1047,14 @@ observeEvent(input$indicator, {
                                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
   locality_map <- localities
+  locality_map <- subset(locality_map, State_En == input$state_name)
   locality_map@data <- merge(locality_map@data, xx, 
                              by.x = "Name_Engli", 
                              by.y = "Locality",
                              all.x = TRUE)
     
   locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
-    
+
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
@@ -875,9 +1126,10 @@ observeEvent(input$indicator, {
 
 observeEvent(input$chosen_month, {
   xx <- monitoring %>% 
-    calculate_performance() %>%
     filter(Year == input$chosen_year,
-           Month == input$chosen_month) %>%
+           Month == input$chosen_month,
+           State == input$state_name) %>%
+    calculate_performance() %>%
     mutate(`Cure Rate` = cured_prop * 100,
            `Defaulter Rate` = defaulter_prop * 100,
            `Death Rate` = dead_prop * 100,
@@ -887,6 +1139,7 @@ observeEvent(input$chosen_month, {
                                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
   locality_map <- localities
+  locality_map <- subset(locality_map, State_En == input$state_name)
   locality_map@data <- merge(locality_map@data, xx, 
                              by.x = "Name_Engli", 
                              by.y = "Locality",
@@ -965,9 +1218,10 @@ observeEvent(input$chosen_month, {
 
 observeEvent(input$chosen_year, {
   xx <- monitoring %>% 
-    calculate_performance() %>%
     filter(Year == input$chosen_year,
-           Month == input$chosen_month) %>%
+           Month == input$chosen_month,
+           State == input$state_name) %>%
+    calculate_performance() %>%
     mutate(`Cure Rate` = cured_prop * 100,
            `Defaulter Rate` = defaulter_prop * 100,
            `Death Rate` = dead_prop * 100,
@@ -977,12 +1231,105 @@ observeEvent(input$chosen_year, {
                                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
   
   locality_map <- localities
+  locality_map <- subset(locality_map, State_En == input$state_name)
   locality_map@data <- merge(locality_map@data, xx, 
                              by.x = "Name_Engli", 
                              by.y = "Locality",
                              all.x = TRUE)
     
-  locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]  
+  locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
+    
+  if(input$indicator == "Cure Rate") {
+    mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 75, 80, 85, 90, 95, 100))
+  } else {
+    mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
+    
+    if(input$indicator == "Defaulter Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 1, 5, 10, 15, 100),
+                    reverse = TRUE)
+    }
+    
+    if(input$indicator == "Death Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 5, 8, 10, 100),
+                    reverse = TRUE)
+    }  
+  
+    if(input$indicator == "Non-response Rate") {
+    pal <- colorBin(palette = mapPalette,
+                    domain = c(0, 100),
+                    bins = c(0, 2, 3, 4, 5, 100),
+                    reverse = TRUE)
+    }    
+  }
+  
+  leafletProxy("localityPerformanceMap") %>%
+    clearControls() %>%
+    clearShapes() %>%
+    fitBounds(lng1 = bbox(locality_map)[1, 1], lat1 = bbox(locality_map)[2, 1],
+              lng2 = bbox(locality_map)[1, 2], lat2 = bbox(locality_map)[2, 2]) %>%
+    addPolygons(data = locality_map,
+                fillColor = pal(locality_map[[input$indicator]]),
+                weight = 2,
+                opacity = 1,
+                color = pal(locality_map[[input$indicator]]),
+                dashArray = "",
+                fillOpacity = 0.8,
+                highlight = highlightOptions(weight = 3,
+                                             color = "#666",
+                                             dashArray = "",
+                                             fillOpacity = 0.7,
+                                             bringToFront = TRUE),
+                label = paste("<strong>", locality_map[["Name_Engli"]], 
+                              " Locality</strong><br/><strong>", 
+                              locality_map[["State_En"]], 
+                              " State</strong><br/><strong>", input$indicator,
+                              ":</strong> ", 
+                              round(locality_map[[input$indicator]], digits = 2), 
+                              "%<br/>", input$chosen_month, " ", 
+                              input$chosen_year, sep = "") %>%
+                  lapply(FUN = htmltools::HTML),
+                labelOptions = labelOptions(style = list("font-weight" = "normal", 
+                                                             padding = "3px 8px"),
+                                            textsize = "12px",
+                                            direction = "auto")) %>%
+    addLegend(pal = pal, 
+              values = c(0, 100),
+              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              opacity = 0.7,
+              position = "bottomright", 
+              labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
+              layerId = "legend")
+})
+
+observeEvent(input$state_name, {
+  xx <- monitoring %>% 
+    filter(Year == input$chosen_year,
+           Month == input$chosen_month,
+           State == input$state_name) %>%
+    calculate_performance() %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100,
+           Month = factor(x = Month, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")))  
+  
+  locality_map <- localities
+  locality_map <- subset(locality_map, State_En == input$state_name)
+  locality_map@data <- merge(locality_map@data, xx, 
+                             by.x = "Name_Engli", 
+                             by.y = "Locality",
+                             all.x = TRUE)
+    
+  locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
     
   if(input$indicator == "Cure Rate") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
@@ -1074,6 +1421,114 @@ output$calendar <- renderPlotly({
 plotlyOutput(outputId = "calendar")
 ```
 --->
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### Admissions - National
+
+```{r}
+overall_admissions_defaulters <- reactive({
+  aggregate(cbind(`New Admissions`, Default) ~ Month + Year, 
+            data = monitoring, FUN = sum) %>% 
+    mutate(MonthYear = paste(Month, Year, sep = " "),
+           MonthYear = factor(x = MonthYear, 
+                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2019")))) %>%
+    arrange(MonthYear) %>%
+    mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+           `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+})
+
+output$overall_admissions <- renderPlotly({
+  z <- overall_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = `New Admissions`), 
+              colour = "blue", linetype = 1, size = 2) +
+    scale_y_continuous(limits = c(0, max(overall_admissions_defaulters()[["New Admissions"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(overall_admissions_defaulters()[["New Admissions"]]),
+                                    by = 5000)) +
+    labs(title = "Admissions over time - 2016 to 2019", x = "")
+
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(y = `Admissions (smoothed)`), 
+                colour = "blue", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  z <- z + 
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "overall_admissions")
+```
+
+### Admissions - State
+
+```{r}
+overall_state_admissions_defaulters <- reactive({
+  aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+            data = monitoring, FUN = sum) %>%
+    filter(State == input$state_name) %>%
+    mutate(MonthYear = paste(Month, Year, sep = " "),
+           MonthYear = factor(x = MonthYear, 
+                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2019")))) %>%
+    arrange(MonthYear) %>%
+    mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+           `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+})
+
+output$overall_state_admissions <- renderPlotly({
+  z <- overall_state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = `New Admissions`), 
+              colour = "blue", linetype = 1, size = 2) +
+    scale_y_continuous(limits = c(0, max(overall_state_admissions_defaulters()[["New Admissions"]]))) +
+    labs(title = paste("Admissions over time - 2016 to 2019 - ", input$state_name, " State", sep = ""), 
+                       x = "")
+
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(y = `Admissions (smoothed)`), 
+                colour = "blue", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  z <- z + 
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "overall_state_admissions")
+```
 
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
