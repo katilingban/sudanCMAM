@@ -1530,6 +1530,61 @@ output$overall_state_admissions <- renderPlotly({
 plotlyOutput(outputId = "overall_state_admissions")
 ```
 
+### Admissions - Locality
+
+```{r}
+overall_locality_admissions_defaulters <- reactive({
+  req(input$locality_name)
+  monitoring %>%
+    filter(State == input$state_name,
+           Locality == input$locality_name) %>%
+    mutate(MonthYear = paste(Month, Year, sep = " "),
+           MonthYear = factor(x = MonthYear, 
+                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
+                                         paste(c("Jan", "Feb", "Mar", "Apr", 
+                                                 "May", "Jun", "Jul", "Aug", 
+                                                 "Sep", "Oct", "Nov", "Dec"), "2019")))) %>%
+    arrange(MonthYear) %>%
+    mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+           `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+})
+
+output$overall_locality_admissions <- renderPlotly({
+  z <- overall_locality_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = `New Admissions`), 
+              colour = "blue", linetype = 1, size = 2) +
+    scale_y_continuous(limits = c(0, max(overall_locality_admissions_defaulters()[["New Admissions"]]))) +
+    labs(title = paste("Admissions over time - 2016 to 2019 - ",
+                       input$locality_name, " Locality",
+                       input$state_name, " State", sep = ""), 
+                       x = "")
+
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(y = `Admissions (smoothed)`), 
+                colour = "blue", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  z <- z + 
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "overall_locality_admissions")
+```
+
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
