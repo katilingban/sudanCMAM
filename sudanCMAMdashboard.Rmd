@@ -330,7 +330,7 @@ Row {.tabset .tabset-fade}
 
 ### National
 
-```{r}
+```{r, fig.height = 5}
 xOverall <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -358,15 +358,16 @@ xOverall <- reactive({
 output$performanceOverall <- renderPlotly({
   z <- xOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = 1)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate"), 
+              alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
                         values = c("Cure Rate" = "darkgreen", 
                                    "Death Rate" = "black", 
                                    "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray70")) +
+                                   "Non-response Rate" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = "Performance over time - 2016 to 2019", y = "%", x = "")
@@ -404,7 +405,7 @@ plotlyOutput(outputId = "performanceOverall")
 
 ### State
 
-```{r}
+```{r, fig.height = 5}
 xStateOverall <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -433,15 +434,16 @@ xStateOverall <- reactive({
 output$performanceStateOverall <- renderPlotly({
   z <- xStateOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = State)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate"),
+              alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
                         values = c("Cure Rate" = "darkgreen", 
                                    "Death Rate" = "black", 
                                    "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray70")) +
+                                   "Non-response Rate" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time - 2016 to 2019 - ", 
@@ -481,7 +483,7 @@ plotlyOutput(outputId = "performanceStateOverall")
 
 ### Locality
 
-```{r}
+```{r, fig.height = 5}
 xLocalityOverall <- reactive({
   req(input$locality_name)
   monitoring %>% 
@@ -511,15 +513,16 @@ xLocalityOverall <- reactive({
 output$performanceLocalityOverall <- renderPlotly({
   z <- xLocalityOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = State)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate")) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate")) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate")) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate")) +
+    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate"), size = 1) +
+    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate"),
+              alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
                         values = c("Cure Rate" = "darkgreen", 
                                    "Death Rate" = "black", 
                                    "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray70")) +
+                                   "Non-response Rate" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time - 2016 to 2019 - ",
@@ -582,10 +585,11 @@ x <- reactive({
 output$performance <- renderPlotly({
   z <- x() %>% 
     ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
-    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
-    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
-    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen", size = 1) +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black", size = 1) +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red", size = 1) +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray50", 
+              alpha = 0.5, size = 1) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time - Year ", input$chosen_year, sep = ""),
@@ -636,10 +640,11 @@ xstate <- reactive({
 output$state_performance <- renderPlotly({
   z <- xstate() %>%
     ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
-    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
-    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
-    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen", size = 1) +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black", size = 1) +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red", size = 1) +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray50", 
+              alpha = 0.5, size = 1) +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time by state - Year ", input$chosen_year, sep = ""), 
@@ -695,10 +700,11 @@ xlocality <- reactive({
 output$locality_performance <- renderPlotly({
   z <- xlocality() %>%
     ggplot(mapping = aes(x = Month, group = Locality)) +
-    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen") +
-    geom_line(mapping = aes(y = `Death Rate`), colour = "black") +
-    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red") +
-    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray70") +
+    geom_line(mapping = aes(y = `Cure Rate`), colour = "darkgreen", size = 1) +
+    geom_line(mapping = aes(y = `Death Rate`), colour = "black", size = 1) +
+    geom_line(mapping = aes(y = `Defaulter Rate`), colour = "red", size = 1) +
+    geom_line(mapping = aes(y = `Non-response Rate`), colour = "gray50", 
+              alpha = 0.5, size = 1) +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time in ", input$state_name, 
@@ -769,7 +775,8 @@ observeEvent(input$indicator, {
   state_map <- states
   state_map@data <- merge(state_map@data, xx, 
                           by.x = "State_En", 
-                          by.y = "State")
+                          by.y = "State",
+                          all.x = TRUE)
   
   state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
@@ -833,7 +840,9 @@ observeEvent(input$indicator, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -857,7 +866,8 @@ observeEvent(input$chosen_month, {
   state_map <- states
   state_map@data <- merge(state_map@data, xx, 
                           by.x = "State_En", 
-                          by.y = "State")
+                          by.y = "State",
+                          all.x = TRUE)
   
   state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
@@ -921,7 +931,9 @@ observeEvent(input$chosen_month, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -945,7 +957,8 @@ observeEvent(input$chosen_year, {
   state_map <- states
   state_map@data <- merge(state_map@data, xx, 
                           by.x = "State_En", 
-                          by.y = "State")
+                          by.y = "State",
+                          all.x = TRUE)
   
   state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
@@ -1009,7 +1022,9 @@ observeEvent(input$chosen_year, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -1117,7 +1132,11 @@ observeEvent(input$indicator, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", 
+                      input$state_name, " State<br/>",
+                      input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -1209,7 +1228,11 @@ observeEvent(input$chosen_month, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", 
+                      input$state_name, " State<br/>",
+                      input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -1301,7 +1324,11 @@ observeEvent(input$chosen_year, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", 
+                      input$state_name, " State<br/>",
+                      input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -1393,7 +1420,11 @@ observeEvent(input$state_name, {
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
               values = c(0, 100),
-              title = paste(input$chosen_month, input$chosen_year, sep = " "),
+              title = htmltools::HTML(
+                paste(input$indicator, "<br/>", 
+                      input$state_name, " State<br/>",
+                      input$chosen_month, 
+                      " ",  input$chosen_year, sep = "")),
               opacity = 0.7,
               position = "bottomright", 
               labFormat = legend.format(digits = 1, between = " to ", suffix = "%"),
@@ -1427,7 +1458,7 @@ Row {.tabset .tabset-fade}
 
 ### Admissions - National
 
-```{r}
+```{r, fig.height = 5}
 overall_admissions_defaulters <- reactive({
   aggregate(cbind(`New Admissions`, Default) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -1480,7 +1511,7 @@ plotlyOutput(outputId = "overall_admissions")
 
 ### Admissions - State
 
-```{r}
+```{r, fig.height = 5}
 overall_state_admissions_defaulters <- reactive({
   aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
             data = monitoring, FUN = sum) %>%
@@ -1532,7 +1563,7 @@ plotlyOutput(outputId = "overall_state_admissions")
 
 ### Admissions - Locality
 
-```{r}
+```{r, fig.height = 5}
 overall_locality_admissions_defaulters <- reactive({
   req(input$locality_name)
   monitoring %>%
@@ -1564,7 +1595,7 @@ output$overall_locality_admissions <- renderPlotly({
               colour = "blue", linetype = 1, size = 2) +
     scale_y_continuous(limits = c(0, max(overall_locality_admissions_defaulters()[["New Admissions"]]))) +
     labs(title = paste("Admissions over time - 2016 to 2019 - ",
-                       input$locality_name, " Locality",
+                       input$locality_name, " Locality, ",
                        input$state_name, " State", sep = ""), 
                        x = "")
 
@@ -1590,7 +1621,7 @@ Row {.tabset .tabset-fade}
 
 ### Admissions - National
 
-```{r}
+```{r, fig.height = 8}
 admissions_defaulters <- reactive({
   aggregate(cbind(`New Admissions`, Default) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
@@ -1612,7 +1643,8 @@ output$admissions <- renderPlotly({
                        breaks = seq(from = 0, 
                                     to = max(admissions_defaulters()[["New Admissions"]]),
                                     by = 5000)) +
-    labs(title = input$chosen_year)
+    labs(title = paste("Admissions over time - Year ", input$chosen_year, sep = ""),
+         x = "")
 
   if(input$smooth) {
     z <- z +
@@ -1648,7 +1680,8 @@ output$state_admissions <- renderPlotly({
   z <- state_admissions_defaulters() %>%
     ggplot(mapping = aes(x = Month, group = State)) +
     geom_line(mapping = aes(y = `New Admissions`), colour = "blue", size = 1) +
-    labs(title = input$chosen_year) +
+    labs(title = paste("Admissions over time by state - Year ", input$chosen_year, sep = ""),
+         x = "") +
     facet_wrap( ~ State, ncol = 6, scales = input$scales)
       
   if(input$smooth) {
@@ -1697,7 +1730,9 @@ output$locality_admissions <- renderPlotly({
     ggplot(mapping = aes(x = Month, group = State)) +
     geom_line(mapping = aes(y = `New Admissions`), 
               colour = "blue", linetype = 1, size = 1) +
-    labs(title = paste(input$state_name, input$chosen_year, sep = " ")) +
+    labs(title = paste("Admissions over time in ", input$state_name, 
+                       " State by locality - Year ", input$chosen_year, sep = ""),
+         x = "") +
     facet_wrap( ~ Locality, nrow = 3, scale = input$scales)
   
   if(input$smooth) {
@@ -1722,6 +1757,100 @@ Row {.tabset .tabset-fade}
 
 ### Defaulters - National
 
+```{r, fig.height = 5}
+output$overall_defaulters <- renderPlotly({
+  z <- overall_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = Default), 
+              colour = "red", linetype = 1, size = 2) +
+    scale_y_continuous(limits = c(0, max(overall_admissions_defaulters()[["Default"]])),
+                       breaks = seq(from = 0, 
+                                    to = max(overall_admissions_defaulters()[["Default"]]),
+                                    by = 500)) +
+    labs(title = "Defaulters over time - 2016 to 2019", x = "")
+
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(y = `Defaulters (smoothed)`), 
+                colour = "red", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  z <- z + 
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "overall_defaulters")
+```
+
+### Defaulters - State
+
+```{r, fig.height = 5}
+output$overall_state_defaulters <- renderPlotly({
+  z <- overall_state_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = Default), 
+              colour = "red", linetype = 1, size = 2) +
+    scale_y_continuous(limits = c(0, max(overall_state_admissions_defaulters()[["Default"]]))) +
+    labs(title = paste("Defaulters over time - 2016 to 2019 - ", input$state_name, " State", sep = ""), 
+                       x = "")
+
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(y = `Defaulters (smoothed)`), 
+                colour = "red", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  z <- z + 
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "overall_state_defaulters")
+```
+
+### Defaulters - Locality
+
+```{r, fig.height = 5}
+output$overall_locality_defaulters <- renderPlotly({
+  z <- overall_locality_admissions_defaulters() %>%
+    ggplot(mapping = aes(x = MonthYear, group = 1)) +
+    geom_line(mapping = aes(y = Default), 
+              colour = "red", linetype = 1, size = 2) +
+    scale_y_continuous(limits = c(0, max(overall_locality_admissions_defaulters()[["Default"]]))) +
+    labs(title = paste("Defaulters over time - 2016 to 2019 - ",
+                       input$locality_name, " Locality, ",
+                       input$state_name, " State", sep = ""), 
+                       x = "")
+
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(y = `Defaulters (smoothed)`), 
+                colour = "red", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  z <- z + 
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8, angle = 90),
+          axis.text.y = element_text(size = 8))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "overall_locality_defaulters")
+```
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### Defaulters - National
+
 ```{r}
 output$defaulters <- renderPlotly({
   z <- admissions_defaulters() %>%
@@ -1732,7 +1861,8 @@ output$defaulters <- renderPlotly({
                        breaks = seq(from = 0, 
                                     to = max(admissions_defaulters()[["Default"]]),
                                     by = 500)) +
-    labs(title = input$chosen_year)
+    labs(title = paste("Defaulters over time - Year ", input$chosen_year, sep = ""),
+         x = "")
   
   if(input$smooth) {
     z <- z +
@@ -1757,7 +1887,8 @@ output$state_defaulters <- renderPlotly({
     ggplot(mapping = aes(x = Month, group = State)) +
     geom_line(mapping = aes(y = Default), colour = "red", 
               linetype = 1, size = 1) +    
-    labs(title = input$chosen_year) +
+    labs(title = paste("Defaulters over time by state - Year ", input$chosen_year, sep = ""),
+         x = "") +
     facet_wrap( ~ State, ncol = 6, scale = input$scales)  
   
   if(input$smooth) {
@@ -1793,7 +1924,9 @@ output$locality_defaulters <- renderPlotly({
     ggplot(mapping = aes(x = Month, group = State)) +
     geom_line(mapping = aes(y = Default), 
               colour = "red", linetype = 1, size = 1) +
-    labs(title = paste(input$state_name, input$chosen_year, sep = " ")) +
+    labs(title = paste("Defaulters over time in ", input$state_name,
+                       " State by locality - Year ", input$chosen_year, sep = ""),
+         x = "") +
     facet_wrap( ~ Locality, nrow = 3, scale = input$scales)  
   
   if(input$smooth) {
