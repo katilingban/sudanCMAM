@@ -20,8 +20,10 @@ if(!require(lubridate)) install.packages("lubridate")
 if(!require(leaflet)) install.packages("leaflet")
 if(!require(RColorBrewer)) install.packages("RColorBrewer")
 if(!require(remotes)) install.packages("remotes")
-if(!require(squeacr)) remotes::install_github("rapidsurveys/squeacr")
-if(!require(sudan)) remotes::install_github("spatialworks/sudan")
+if(!require(squeacr)) remotes::install_github(repo = "rapidsurveys/squeacr", 
+                                              upgrade = "always")
+if(!require(sudan)) remotes::install_github(repo = "spatialworks/sudan",
+                                            upgrade = "always")
 
 library(flexdashboard)
 library(ggplot2)
