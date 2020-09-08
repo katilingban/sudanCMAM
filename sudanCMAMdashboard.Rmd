@@ -222,6 +222,10 @@ checkboxInput(inputId = "smooth",
               label = "Smooth line",
               value = FALSE)
 
+checkboxInput(inputId = "showCalendar",
+              label = "Show seasonal calendar",
+              value = FALSE)
+
 selectInput(inputId = "scales",
             label = "Scaling for plots",
             choices = c("Free" = "free_y",
@@ -1463,29 +1467,55 @@ overall_admissions_defaulters <- reactive({
            `Defaulters (smoothed)` = smooth_m3a3(x = Default))
 })
 
+season_long <- reactive({
+  seasonal_calendar %>%
+    mutate(start = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+           end = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+})
+
 output$overall_admissions <- renderPlotly({
   z <- overall_admissions_defaulters() %>%
-    ggplot(mapping = aes(x = MonthYear, group = 1)) +
-    geom_line(mapping = aes(y = `New Admissions`), 
-              colour = "blue", linetype = 1, size = 2) +
+    ggplot() +
+    geom_line(mapping = aes(x = MonthYear, y = `New Admissions`, group = 1,
+                            text = paste(MonthYear, "\nNew Admissions: ", 
+                                         `New Admissions`, sep = "")),
+              colour = "blue", linetype = 1, size = 2)
+  
+  if(input$smooth) {
+    z <- z +
+      geom_line(mapping = aes(x = MonthYear, y = `Admissions (smoothed)`, group = 1,
+                              text = "Admissions (smoothed)"),
+                colour = "blue", alpha = 0.5, linetype = 2, size = 2)
+  }
+  
+  if(input$showCalendar) {
+    z <- z +
+      geom_rect(mapping = aes(xmin = start, xmax = end,
+                              ymin = 0, ymax = 2000, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Food availability")) +
+      geom_rect(mapping = aes(xmin = start, xmax = end,
+                              ymin = 2500, ymax = 4500, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Planting")) +
+      geom_rect(mapping = aes(xmin = start, xmax = end,
+                              ymin = 5000, ymax = 7000, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Rainfall"))
+  }
+  
+  z <- z + 
     scale_y_continuous(limits = c(0, max(overall_admissions_defaulters()[["New Admissions"]])),
                        breaks = seq(from = 0, 
                                     to = max(overall_admissions_defaulters()[["New Admissions"]]),
                                     by = 5000)) +
-    labs(title = "Admissions over time - 2016 to 2019", x = "")
-
-  if(input$smooth) {
-    z <- z +
-      geom_line(mapping = aes(y = `Admissions (smoothed)`), 
-                colour = "blue", alpha = 0.5, linetype = 2, size = 2)
-  }
-  
-  z <- z + 
+    labs(title = "Admissions over time - 2016 to 2019", x = "") +
     unicef_theme +
     theme(axis.text.x = element_text(size = 8, angle = 90),
           axis.text.y = element_text(size = 8))
   
-  ggplotly(p = z)
+  ggplotly(p = z, tooltip = "text") %>%
+    layout(legend = list(orientation = "h"))
 })
 
 plotlyOutput(outputId = "overall_admissions")
