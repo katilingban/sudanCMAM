@@ -72,6 +72,7 @@ unicef_theme <- theme_bw() +
         strip.background = element_rect(colour = unicef_darkblue,
                                         fill = unicef_darkblue),
         strip.text = element_text(colour = "white", size = 12),
+        legend.background = element_rect(colour = NA, fill = NA),
         legend.key = element_rect(linetype = 0),
         legend.key.size = unit(x = 12, units = "points"),
         legend.spacing = unit(x = 4, units = "points"),
@@ -1448,29 +1449,30 @@ Row {.tabset .tabset-fade}
 overall_admissions_defaulters <- reactive({
   aggregate(cbind(`New Admissions`, Default) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
-    mutate(MonthYear = paste(Month, Year, sep = " "),
-           MonthYear = factor(x = MonthYear, 
-                              levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
-                                                 "May", "Jun", "Jul", "Aug", 
-                                                 "Sep", "Oct", "Nov", "Dec"), "2016"),
-                                         paste(c("Jan", "Feb", "Mar", "Apr", 
-                                                 "May", "Jun", "Jul", "Aug", 
-                                                 "Sep", "Oct", "Nov", "Dec"), "2017"),
-                                         paste(c("Jan", "Feb", "Mar", "Apr", 
-                                                 "May", "Jun", "Jul", "Aug", 
-                                                 "Sep", "Oct", "Nov", "Dec"), "2018"),
-                                         paste(c("Jan", "Feb", "Mar", "Apr", 
-                                                 "May", "Jun", "Jul", "Aug", 
-                                                 "Sep", "Oct", "Nov", "Dec"), "2019")))) %>%
-    arrange(MonthYear) %>%
+    #mutate(MonthYear = paste(Month, Year, sep = " "),
+    #       MonthYear = factor(x = MonthYear, 
+    #                          levels = c(paste(c("Jan", "Feb", "Mar", "Apr", 
+    #                                             "May", "Jun", "Jul", "Aug", 
+    #                                             "Sep", "Oct", "Nov", "Dec"), "2016"),
+    #                                     paste(c("Jan", "Feb", "Mar", "Apr", 
+    #                                             "May", "Jun", "Jul", "Aug", 
+    #                                             "Sep", "Oct", "Nov", "Dec"), "2017"),
+    #                                     paste(c("Jan", "Feb", "Mar", "Apr", 
+    #                                             "May", "Jun", "Jul", "Aug", 
+    #                                             "Sep", "Oct", "Nov", "Dec"), "2018"),
+    #                                     paste(c("Jan", "Feb", "Mar", "Apr", 
+    #                                             "May", "Jun", "Jul", "Aug", 
+    #                                             "Sep", "Oct", "Nov", "Dec"), "2019")))) %>%
+    mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), format = "%Y-%b-%d")) %>%
+    #arrange(MonthYear) %>%
     mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
            `Defaulters (smoothed)` = smooth_m3a3(x = Default))
 })
 
 season_long <- reactive({
   seasonal_calendar %>%
-    mutate(start = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
-           end = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+    mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+           endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
 })
 
 output$overall_admissions <- renderPlotly({
@@ -1490,15 +1492,15 @@ output$overall_admissions <- renderPlotly({
   
   if(input$showCalendar) {
     z <- z +
-      geom_rect(mapping = aes(xmin = start, xmax = end,
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 2000, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Food availability")) +
-      geom_rect(mapping = aes(xmin = start, xmax = end,
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 2500, ymax = 4500, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Planting")) +
-      geom_rect(mapping = aes(xmin = start, xmax = end,
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 5000, ymax = 7000, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Rainfall"))
@@ -1509,13 +1511,16 @@ output$overall_admissions <- renderPlotly({
                        breaks = seq(from = 0, 
                                     to = max(overall_admissions_defaulters()[["New Admissions"]]),
                                     by = 5000)) +
+    scale_x_date(date_breaks = "1 year", date_minor_breaks = "1 month", date_labels = "%b") %>%
     labs(title = "Admissions over time - 2016 to 2019", x = "") +
     unicef_theme +
-    theme(axis.text.x = element_text(size = 8, angle = 90),
+    #theme(axis.text.x = element_text(size = 8, angle = 90),
+    #      axis.text.y = element_text(size = 8))
+    theme(panel.grid.minor.x = element_line(size = 1),
           axis.text.y = element_text(size = 8))
   
   ggplotly(p = z, tooltip = "text") %>%
-    layout(legend = list(orientation = "h"))
+    layout(legend = list(orientation = "h", y = 1))
 })
 
 plotlyOutput(outputId = "overall_admissions")
@@ -1722,6 +1727,7 @@ output$overall_locality_defaulters <- renderPlotly({
 plotlyOutput(outputId = "overall_locality_defaulters")
 ```
 
+<!---
 Row
 --------------------------------------------------------------------------------
 
@@ -1748,6 +1754,7 @@ output$calendar <- renderPlot({
 
 plotOutput(outputId = "calendar")
 ```
+--->
 
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
