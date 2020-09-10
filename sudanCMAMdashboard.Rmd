@@ -5,7 +5,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: scroll
-    social: menu
+    #social: [ "twitter", "linkedin" ]
     source_code: https://github.com/katilingban/sudanCMAM
     theme: cerulean
 ---
@@ -2226,3 +2226,13 @@ plotlyOutput(outputId = "locality_defaulters")
 Case-finding
 ================================================================================
 --->
+
+About
+================================================================================
+
+### About
+
+This dashboard has been developed in support of the evaluation of the Sudan Community-based Management of Acute Manlnutrition by [Emmanuel Mandalazi](https://katilingban.io/author/emmanuel-mandalazi/) and [Ernest Guevarra](https://ernest.guevarra.io). This dashboard and its source code is made available under a [GPL-3 license](https://github.com/katilingban/sudanCMAM/blob/master/LICENSE.md).
+
+
+
