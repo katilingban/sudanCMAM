@@ -1896,35 +1896,6 @@ output$overall_locality_defaulters <- renderPlotly({
 plotlyOutput(outputId = "overall_locality_defaulters")
 ```
 
-<!---
-Row
---------------------------------------------------------------------------------
-
-### Seasonal Calendar
-
-```{r, fig.height = 1}
-output$calendar <- renderPlot({
-  seasonal_calendar %>%
-    mutate(start = as.Date(start),
-           end = as.Date(end),
-           color = ifelse(is.na(event), NA,
-                     ifelse(group == "Planting", "#324D12",
-                       ifelse(group == "Rainfall", "#89CFF0", "#B22222"))),
-           fontcolor = "white") %>%
-    filter(year(start) == input$chosen_year) %>%
-    gg_vistime() +
-    #scale_x_date(breaks = seq.Date(from = as.Date(paste(input$chosen_year, "-01-01", sep = "")),
-    #                               to = as.Date(paste(input$chosen_year, "-12-31", sep = "")),
-    #                               by = "month"),
-    #             limits = c(as.Date(paste(input$chosen_year, "-01-01", sep = "")),
-    #                        as.Date(paste(input$chosen_year, "-12-31", sep = "")))) +
-    unicef_theme
-})
-
-plotOutput(outputId = "calendar")
-```
---->
-
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
