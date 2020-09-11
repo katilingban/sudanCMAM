@@ -5,7 +5,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: scroll
-    social: menu
+    #social: [ "twitter", "linkedin" ]
     source_code: https://github.com/katilingban/sudanCMAM
     theme: cerulean
 ---
@@ -158,6 +158,17 @@ hr()
 br()
 ```
 
+#### Performance settings
+
+```{r}
+checkboxInput(inputId = "standards",
+              label = "Show Sphere standards",
+              value = FALSE)
+
+hr()
+br()
+```
+
 #### Spatial settings
 
 ```{r}
@@ -179,10 +190,10 @@ selectInput(inputId = "chosen_month",
 
 selectInput(inputId = "indicator",
             label = "Choose indicator to map",
-            choices = c("Responsiveness: Cure rate" = "Cure Rate",
-                        "Responsiveness: Defaulter rate" = "Defaulter Rate",
-                        "Responsiveness: Death rate" = "Death Rate",
-                        "Responsiveness: Non-response rate" = "Non-response Rate"),
+            choices = c("Performance: Cure rate" = "Cure Rate",
+                        "Performance: Defaulter rate" = "Defaulter Rate",
+                        "Performance: Death rate" = "Death Rate",
+                        "Performance: Non-response rate" = "Non-response Rate"),
             selected = NULL)
 
 selectInput(inputId = "map_tiles",
@@ -198,17 +209,6 @@ selectInput(inputId = "map_tiles",
                         "Standard" = "mapbox.standard",
                         "Decmial" = "mapbox.decimal"),
             selected = "map.terminal")
-
-hr()
-br()
-```
-
-#### Performance settings
-
-```{r}
-checkboxInput(inputId = "standards",
-              label = "Show Sphere standards",
-              value = FALSE)
 
 hr()
 br()
@@ -234,97 +234,6 @@ selectInput(inputId = "scales",
 
 Performance
 ================================================================================
-
-Row
---------------------------------------------------------------------------------
-
-### Cure Rate {.value-box}
-
-```{r}
-renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
-            data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
-  
-  valueBox(
-    value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
-  )
-})
-```
-
-### Defaulter Rate {.value-box}
-
-```{r}
-renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
-            data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
-  
-  valueBox(
-    value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
-  )
-})
-```
-
-### Death Rate {.value-box}
-
-```{r}
-renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
-            data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
-  
-  valueBox(
-    value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
-  )
-})
-```
-
-### Non-response Rate {.value-box}
-
-```{r}
-renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
-            data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
-  
-  valueBox(
-    value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
-  )
-})
-```
 
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
@@ -598,6 +507,96 @@ output$performanceLocalityOverall <- renderPlotly({
 plotlyOutput(outputId = "performanceLocalityOverall")
 ```
 
+Row
+--------------------------------------------------------------------------------
+
+### Cure Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
+  )
+})
+```
+
+### Defaulter Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
+  )
+})
+```
+
+### Death Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
+  )
+})
+```
+
+### Non-response Rate {.value-box}
+
+```{r}
+renderValueBox({
+  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year) %>%
+    mutate(`Cure Rate` = cured_prop * 100,
+           `Defaulter Rate` = defaulter_prop * 100,
+           `Death Rate` = dead_prop * 100,
+           `Non-response Rate` = nr_prop * 100)
+  
+  valueBox(
+    value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
+    caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
+  )
+})
+```
 
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
@@ -2226,3 +2225,13 @@ plotlyOutput(outputId = "locality_defaulters")
 Case-finding
 ================================================================================
 --->
+
+About
+================================================================================
+
+### About
+
+This dashboard has been developed in support of the evaluation of the Sudan Community-based Management of Acute Manlnutrition by [Emmanuel Mandalazi](https://katilingban.io/author/emmanuel-mandalazi/) and [Ernest Guevarra](https://ernest.guevarra.io). This dashboard and its source code is made available under a [GPL-3 license](https://github.com/katilingban/sudanCMAM/blob/master/LICENSE.md).
+
+
+
