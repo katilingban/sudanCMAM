@@ -190,10 +190,10 @@ selectInput(inputId = "chosen_month",
 
 selectInput(inputId = "indicator",
             label = "Choose indicator to map",
-            choices = c("Performance: Cure rate" = "Cure Rate",
-                        "Performance: Defaulter rate" = "Defaulter Rate",
-                        "Performance: Death rate" = "Death Rate",
-                        "Performance: Non-response rate" = "Non-response Rate"),
+            choices = c("Performance: Cured" = "Cured",
+                        "Performance: Defaulted" = "Defaulted",
+                        "Performance: Dead" = "Dead",
+                        "Performance: Non-responder" = "Non-responder"),
             selected = NULL)
 
 selectInput(inputId = "map_tiles",
@@ -245,10 +245,10 @@ xOverall <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Month + Year, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            MonthYear = paste(Month, Year, sep = " "),
            MonthYear = factor(x = MonthYear, 
                               levels = c(paste(month.abb, "2016"),
@@ -260,35 +260,35 @@ xOverall <- reactive({
 output$performanceOverall <- renderPlotly({
   z <- xOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = 1)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate",
-                            text = paste("Cure Rate: ", 
-                                         round(`Cure Rate`, 
+    geom_line(mapping = aes(y = `Cured`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured`, 
                                                digits = 1), "%\n",
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate",
-                            text = paste("Death Rate: ",
-                                         round(`Death Rate`, 
+    geom_line(mapping = aes(y = `Dead`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead`, 
                                                digits = 1), "%\n",
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate",
-                            text = paste("Defaulter Rate: ", 
-                                         round(`Defaulter Rate`,
+    geom_line(mapping = aes(y = `Defaulted`, colour = "Defaulted",
+                            text = paste("Defaulted: ", 
+                                         round(`Defaulted`,
                                                digits = 1), "%\n", 
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate",
-                            text = paste("Non-response rate: ",
-                                         round(`Non-response Rate`,
+    geom_line(mapping = aes(y = `Non-responder`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder`,
                                                digits = 1), "%\n", 
                                          MonthYear, sep = "")), 
               alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray50")) +
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = "Performance over time - 2016 to 2019", y = "%", x = "")
@@ -333,10 +333,10 @@ xStateOverall <- reactive({
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(State == input$state_name) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            MonthYear = paste(Month, Year, sep = " "),
            MonthYear = factor(x = MonthYear, 
                               levels = c(paste(month.abb, "2016"),
@@ -348,35 +348,35 @@ xStateOverall <- reactive({
 output$performanceStateOverall <- renderPlotly({
   z <- xStateOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = State)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate",
-                            text = paste("Cure Rate: ", 
-                                         round(`Cure Rate`, 
+    geom_line(mapping = aes(y = `Cured`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured`, 
                                                digits = 1), "%\n",
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate",
-                            text = paste("Death Rate: ",
-                                         round(`Death Rate`, 
+    geom_line(mapping = aes(y = `Dead`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead`, 
                                                digits = 1), "%\n",
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate",
-                            text = paste("Defaulter Rate: ", 
-                                         round(`Defaulter Rate`,
+    geom_line(mapping = aes(y = `Defaulted`, colour = "Defaulted",
+                            text = paste("Defaulted: ", 
+                                         round(`Defaulted`,
                                                digits = 1), "%\n", 
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate",
-                            text = paste("Non-response rate: ",
-                                         round(`Non-response Rate`,
+    geom_line(mapping = aes(y = `Non-responder`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder`,
                                                digits = 1), "%\n", 
                                          MonthYear, sep = "")), 
               alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray50")) +
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time - 2016 to 2019 - ", 
@@ -424,10 +424,10 @@ xLocalityOverall <- reactive({
     calculate_performance() %>%
     filter(State == input$state_name,
            Locality == input$locality_name) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            MonthYear = paste(Month, Year, sep = " "),
            MonthYear = factor(x = MonthYear, 
                               levels = c(paste(month.abb, "2016"),
@@ -439,35 +439,35 @@ xLocalityOverall <- reactive({
 output$performanceLocalityOverall <- renderPlotly({
   z <- xLocalityOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = State)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate",
-                            text = paste("Cure Rate: ", 
-                                         round(`Cure Rate`, 
+    geom_line(mapping = aes(y = `Cured`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured`, 
                                                digits = 1), "%\n",
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate",
-                            text = paste("Death Rate: ",
-                                         round(`Death Rate`, 
+    geom_line(mapping = aes(y = `Dead`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead`, 
                                                digits = 1), "%\n",
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate",
-                            text = paste("Defaulter Rate: ", 
-                                         round(`Defaulter Rate`,
+    geom_line(mapping = aes(y = `Defaulted`, colour = "Defaulted",
+                            text = paste("Defaulted: ", 
+                                         round(`Defaulted`,
                                                digits = 1), "%\n", 
                                          MonthYear, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate",
-                            text = paste("Non-response rate: ",
-                                         round(`Non-response Rate`,
+    geom_line(mapping = aes(y = `Non-responder`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder`,
                                                digits = 1), "%\n", 
                                          MonthYear, sep = "")), 
               alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray50")) +
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time - 2016 to 2019 - ",
@@ -510,7 +510,7 @@ plotlyOutput(outputId = "performanceLocalityOverall")
 Row
 --------------------------------------------------------------------------------
 
-### Cure Rate {.value-box}
+### Cured {.value-box}
 
 ```{r}
 renderValueBox({
@@ -518,21 +518,21 @@ renderValueBox({
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100)
   
   valueBox(
-    value = paste(round(yearTotal$`Cure Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Cure Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Cure Rate` <= 75) "danger" else "success"
+    value = paste(round(yearTotal$`Cured`, digits = 2), "%", sep = ""),
+    caption = paste("Cured - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Cured` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Cured` <= 75) "danger" else "success"
   )
 })
 ```
 
-### Defaulter Rate {.value-box}
+### Defaulted {.value-box}
 
 ```{r}
 renderValueBox({
@@ -540,21 +540,21 @@ renderValueBox({
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100)
   
   valueBox(
-    value = paste(round(yearTotal$`Defaulter Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Defaulter Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Defaulter Rate` >= 15) "danger" else "success"
+    value = paste(round(yearTotal$`Defaulted`, digits = 2), "%", sep = ""),
+    caption = paste("Defaulted - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Defaulted` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Defaulted` >= 15) "danger" else "success"
   )
 })
 ```
 
-### Death Rate {.value-box}
+### Dead {.value-box}
 
 ```{r}
 renderValueBox({
@@ -562,21 +562,21 @@ renderValueBox({
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100)
   
   valueBox(
-    value = paste(round(yearTotal$`Death Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Death Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Death Rate` >= 10) "danger" else "success"
+    value = paste(round(yearTotal$`Dead`, digits = 2), "%", sep = ""),
+    caption = paste("Dead - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Dead` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Dead` >= 10) "danger" else "success"
   )
 })
 ```
 
-### Non-response Rate {.value-box}
+### Non-responder {.value-box}
 
 ```{r}
 renderValueBox({
@@ -584,16 +584,16 @@ renderValueBox({
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100)
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100)
   
   valueBox(
-    value = paste(round(yearTotal$`Non-response Rate`, digits = 2), "%", sep = ""),
-    caption = paste("Non-response Rate - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cure Rate` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Non-response Rate` >= 5) "danger" else "success"
+    value = paste(round(yearTotal$`Non-responder`, digits = 2), "%", sep = ""),
+    caption = paste("Non-responder - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal$`Non-responder` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal$`Non-responder` >= 5) "danger" else "success"
   )
 })
 ```
@@ -609,10 +609,10 @@ x <- reactive({
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))
 })
@@ -620,31 +620,31 @@ x <- reactive({
 output$performance <- renderPlotly({
   z <- x() %>% 
     ggplot(mapping = aes(x = Month, group = Year)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate",
-                            text = paste("Cure Rate: ", 
-                                         round(`Cure Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Cured`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate",
-                            text = paste("Death Rate: ",
-                                         round(`Death Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Dead`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               size = 1) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate",
-                            text = paste("Defaulter Rate: ",
-                                         round(`Defaulter Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Defaulted`, colour = "Defaulted",
+                            text = paste("Defaulted: ",
+                                         round(`Defaulted`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               size = 1) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate",
-                            text = paste("Non-response rate: ",
-                                         round(`Non-response Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Non-responder`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray50")) +
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time - Year ", input$chosen_year, sep = ""),
@@ -684,10 +684,10 @@ xstate <- reactive({
                data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))
 })
@@ -695,31 +695,31 @@ xstate <- reactive({
 output$state_performance <- renderPlotly({
   z <- xstate() %>%
     ggplot(mapping = aes(x = Month, group = State)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate",
-                            text = paste("Cure Rate: ", 
-                                         round(`Cure Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Cured`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate",
-                            text = paste("Death Rate: ",
-                                         round(`Death Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Dead`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               size = 1) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate",
-                            text = paste("Defaulter Rate: ",
-                                         round(`Defaulter Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Defaulted`, colour = "Defaulted",
+                            text = paste("Defaulted: ",
+                                         round(`Defaulted`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               size = 1) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate",
-                            text = paste("Non-response rate: ",
-                                         round(`Non-response Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Non-responder`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray50")) +
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time by state - Year ", input$chosen_year, sep = ""), 
@@ -764,10 +764,10 @@ xlocality <- reactive({
     calculate_performance() %>%
     filter(Year == input$chosen_year,
            State == input$state_name) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))
 })
@@ -775,31 +775,31 @@ xlocality <- reactive({
 output$locality_performance <- renderPlotly({
   z <- xlocality() %>%
     ggplot(mapping = aes(x = Month, group = Locality)) +
-    geom_line(mapping = aes(y = `Cure Rate`, colour = "Cure Rate",
-                            text = paste("Cure Rate: ", 
-                                         round(`Cure Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Cured`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")), 
               size = 1) +
-    geom_line(mapping = aes(y = `Death Rate`, colour = "Death Rate",
-                            text = paste("Death Rate: ",
-                                         round(`Death Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Dead`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               size = 1) +
-    geom_line(mapping = aes(y = `Defaulter Rate`, colour = "Defaulter Rate",
-                            text = paste("Defaulter Rate: ",
-                                         round(`Defaulter Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Defaulted`, colour = "Defaulted",
+                            text = paste("Defaulted: ",
+                                         round(`Defaulted`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               size = 1) +
-    geom_line(mapping = aes(y = `Non-response Rate`, colour = "Non-response Rate",
-                            text = paste("Non-response rate: ",
-                                         round(`Non-response Rate`, digits = 1),
+    geom_line(mapping = aes(y = `Non-responder`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder`, digits = 1),
                                          "%\n", Month, " ", Year, sep = "")),
               alpha = 0.5, size = 1) +
     scale_colour_manual(name = "",
-                        values = c("Cure Rate" = "darkgreen", 
-                                   "Death Rate" = "black", 
-                                   "Defaulter Rate" = "red", 
-                                   "Non-response Rate" = "gray50")) +
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                        breaks = seq(from = 0, to = 100, by = 10)) +
     labs(title = paste("Performance over time in ", input$state_name, 
@@ -860,10 +860,10 @@ observeEvent(input$indicator, {
     calculate_performance() %>%
     filter(Year == input$chosen_year,
            Month == input$chosen_month) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))  
   
@@ -875,7 +875,7 @@ observeEvent(input$indicator, {
   
   state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -883,21 +883,21 @@ observeEvent(input$indicator, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -950,10 +950,10 @@ observeEvent(input$chosen_month, {
     calculate_performance() %>%
     filter(Year == input$chosen_year,
            Month == input$chosen_month) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))  
   
@@ -965,7 +965,7 @@ observeEvent(input$chosen_month, {
   
   state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -973,21 +973,21 @@ observeEvent(input$chosen_month, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -1040,10 +1040,10 @@ observeEvent(input$chosen_year, {
     calculate_performance() %>%
     filter(Year == input$chosen_year,
            Month == input$chosen_month) %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))  
   
@@ -1055,7 +1055,7 @@ observeEvent(input$chosen_year, {
   
   state_map@data <- state_map@data[order(as.numeric(state_map$OBJECTID_1)), ]
   
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -1063,21 +1063,21 @@ observeEvent(input$chosen_year, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -1146,10 +1146,10 @@ observeEvent(input$indicator, {
            Month == input$chosen_month,
            State == input$state_name) %>%
     calculate_performance() %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))  
   
@@ -1162,7 +1162,7 @@ observeEvent(input$indicator, {
     
   locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
 
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -1170,21 +1170,21 @@ observeEvent(input$indicator, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -1241,10 +1241,10 @@ observeEvent(input$chosen_month, {
            Month == input$chosen_month,
            State == input$state_name) %>%
     calculate_performance() %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))  
   
@@ -1257,7 +1257,7 @@ observeEvent(input$chosen_month, {
     
   locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
     
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -1265,21 +1265,21 @@ observeEvent(input$chosen_month, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -1352,7 +1352,7 @@ observeEvent(input$chosen_year, {
     
   locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
     
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -1360,21 +1360,21 @@ observeEvent(input$chosen_year, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -1431,10 +1431,10 @@ observeEvent(input$state_name, {
            Month == input$chosen_month,
            State == input$state_name) %>%
     calculate_performance() %>%
-    mutate(`Cure Rate` = cured_prop * 100,
-           `Defaulter Rate` = defaulter_prop * 100,
-           `Death Rate` = dead_prop * 100,
-           `Non-response Rate` = nr_prop * 100,
+    mutate(`Cured` = cured_prop * 100,
+           `Defaulted` = defaulter_prop * 100,
+           `Dead` = dead_prop * 100,
+           `Non-responder` = nr_prop * 100,
            Month = factor(x = Month, 
                           levels = month.abb))  
   
@@ -1447,7 +1447,7 @@ observeEvent(input$state_name, {
     
   locality_map@data <- locality_map@data[order(as.numeric(locality_map$OBJECTID)), ]
     
-  if(input$indicator == "Cure Rate") {
+  if(input$indicator == "Cured") {
     mapPalette <- brewer.pal(n = 6, name = "RdYlGn")
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
@@ -1455,21 +1455,21 @@ observeEvent(input$state_name, {
   } else {
     mapPalette <- brewer.pal(n = 5, name = "RdYlGn")
     
-    if(input$indicator == "Defaulter Rate") {
+    if(input$indicator == "Defaulted") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 1, 5, 10, 15, 100),
                     reverse = TRUE)
     }
     
-    if(input$indicator == "Death Rate") {
+    if(input$indicator == "Dead") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 5, 8, 10, 100),
                     reverse = TRUE)
     }  
   
-    if(input$indicator == "Non-response Rate") {
+    if(input$indicator == "Non-responder") {
     pal <- colorBin(palette = mapPalette,
                     domain = c(0, 100),
                     bins = c(0, 2, 3, 4, 5, 100),
@@ -2196,7 +2196,12 @@ About
 
 ### About
 
-This dashboard has been developed in support of the evaluation of the Sudan Community-based Management of Acute Manlnutrition by [Emmanuel Mandalazi](https://katilingban.io/author/emmanuel-mandalazi/) and [Ernest Guevarra](https://ernest.guevarra.io). This dashboard and its source code is made available under a [GPL-3 license](https://github.com/katilingban/sudanCMAM/blob/master/LICENSE.md).
+This dashboard has been developed in support of the evaluation of the **Sudan Community-based Management of Acute Manlnutrition**. It presents
+
+
+
+
+by [Emmanuel Mandalazi](https://katilingban.io/author/emmanuel-mandalazi/) and [Ernest Guevarra](https://ernest.guevarra.io). This dashboard and its source code is made available under a [GPL-3 license](https://github.com/katilingban/sudanCMAM/blob/master/LICENSE.md).
 
 
 
