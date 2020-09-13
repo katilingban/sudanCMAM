@@ -8,6 +8,16 @@ In this version:
 
 * general layout improvements
 
+* further clean up of locality data to address issues with Gedaref and South
+Darfur data
+
+* Improved map pop-up information specifically for locality results showing
+NA (now shows no data) and NaN (now shows no discharges)
+
+* Added info buttons on sidebar settings to provide information and guidance
+
+* Added about section
+
 # sudanCMAM v0.1.1
 
 In this version:
