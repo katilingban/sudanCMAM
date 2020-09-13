@@ -69,7 +69,7 @@ unicef_theme <- theme_bw() +
         panel.grid.minor = element_line(linetype = 0),
         strip.background = element_rect(colour = unicef_darkblue,
                                         fill = unicef_darkblue),
-        strip.text = element_text(colour = "white", size = 10),
+        strip.text = element_text(face = "bold", colour = "white", size = 10, vjust = 1),
         legend.background = element_rect(colour = NA, fill = NA),
         legend.key = element_rect(linetype = 0),
         legend.key.size = unit(x = 8, units = "points"),
@@ -134,9 +134,61 @@ legend.format <- function (prefix = "",
 Sidebar {.sidebar}
 ================================================================================
 
-### General settings
-
 ```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("General settings"))
+
+div(style="display: inline-block;vertical-align:top;",
+    actionLink(inputId = "general_settings_info",
+               label = "",
+               icon = icon(name = "info-sign", lib = "glyphicon")))
+
+observeEvent(input$general_settings_info, {
+  showModal(
+    modalDialog(
+      HTML(
+        "<p>These settings are used across the both sections (<strong>performance</strong> 
+        and <strong>responsiveness</strong>) of this dashboard.</p>
+        <br>
+        <h4>Select state</h4>
+        <p>From the drop-down menu, select the state for which state-specific analysis
+        and/or visualisations are to be shown such as <strong>performance over 
+        time from 2016-2019</strong>, <strong>admissions over time from 2016-2019</strong>
+        and <strong>defaulters over time from 2016-2019</strong>.</p>
+        <p>Selected state will also determine which localities are provided as
+        options in the <em>Select locality</em> settings and which localities
+        are presented in the locality level <strong>performance over time for a 
+        specific year</strong>, <strong>admissions over time for a specific
+        year</strong>, <strong>defaulters over time for a specific year</strong>
+        and <strong>choropleth map of performance for a specific month and year</strong>.</p>
+        <p>Click on drop-down menu to see list of states and select state. Gazera
+        state is selected on dashboard startup.</p>
+        <br>
+        <h4>Select locality</h4>
+        <p>From the drop-down menu, select the locality for which locality-specific
+        analysis and/or visualisations are to be shown such as <strong>performance
+        over time from 2016-2019</strong>, <strong>admissions over time from
+        2016-2019</strong> and <strong>defaulters over time from 2016-2019</strong>.</p>
+        <p>The list of localities to choose from the drop-down menu depends on
+        the selected state. No locality is selected on dashboard startup.</p>
+        <br>
+        <h4>Select year</h4>
+        <p>From the drop-down menu, select the year for which year-specific analysis
+        and/or visualisations are to be shown such as <strong>performance over
+        time at national, state and locality level</strong>, <strong>admissions
+        over time at national, state and locality level</strong>,
+        <strong>defaulters over time at national, state and locality level</strong>,
+        and <strong>choropleth map of performance by selected month and year</strong>.
+        <p>Click on the drop-down menu to see the choices of years from 2016 to
+        2019. On dashboard startup, year 2016 is selected.</p>
+        "
+      ),
+      title = "General settings",
+      footer = modalButton("Close")
+    )
+  )
+})
+
 selectInput(inputId = "state_name",
             label = "Select state",
             choices = unique(monitoring$State),
@@ -146,7 +198,7 @@ output$select_locality <- renderUI({
   selectInput(inputId = "locality_name",
               label = "Select locality",
               choices = monitoring$Locality[monitoring$State == input$state_name],
-              selected = monitoring$Locality[monitoring$State == input$state_name][1])
+              selected = NULL)
 })
 
 uiOutput("select_locality")
@@ -157,12 +209,40 @@ selectInput(inputId = "chosen_year",
             selected = NULL)
 
 hr()
-#br()
 ```
 
-#### Performance settings
-
 ```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("Performance settings"))
+
+div(style="display: inline-block;vertical-align:top;",
+    actionLink(inputId = "performance_settings_info",
+               label = "",
+               icon = icon(name = "info-sign", lib = "glyphicon")))
+
+observeEvent(input$performance_settings_info, {
+  showModal(
+    modalDialog(
+      HTML(
+        "<p>These settings are used for the <strong>performance indicators</strong>
+        section of this dashboard.</p>
+        <br>
+        <h4>Show Sphere standards</h4>
+        <p>This checkbox indicates whether 
+        <a href='https://handbook.spherestandards.org/en/sphere/#ch007' target='_blank'>Sphere standards</a> 
+        for <strong> performance indicators</strong> should be shown on the plots.</p>
+        <p>On dashboard startup, the checkbox is unchecked and performance indicator 
+        values for 
+        <a href='https://handbook.spherestandards.org/en/sphere/#ch007' target='_blank'>Sphere standards</a> 
+        are not shown on the plots.</p>
+        "
+      ),
+      title = "Performance settings",
+      footer = modalButton("Close")
+    )
+  )
+})
+
 checkboxInput(inputId = "standards",
               label = "Show Sphere standards",
               value = FALSE)
@@ -171,9 +251,48 @@ hr()
 #br()
 ```
 
-#### Spatial settings
-
 ```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("Spatial settings"))
+
+div(style="display: inline-block;vertical-align:top;",
+    actionLink(inputId = "spatial_settings_info",
+               label = "",
+               icon = icon(name = "info-sign", lib = "glyphicon")))
+
+observeEvent(input$spatial_settings_info, {
+  showModal(
+    modalDialog(
+      HTML(
+        "<p>These settings are used for the <strong>spatial</strong> outputs of 
+        this dashboard.</p>
+        <br>
+        <h4>Select month</h4>
+        <p>From the drop-down menu, select the month for selected performance 
+        indicators are to be mapped.</p>
+        <p>Click on the drop-down menu to see the choices of months from January to
+        December. On dashboard startup, January is selected.</p>
+        <br>
+        <h4>Select indicator to map</h4>
+        <p>From the drop-down menu, select the performance indicator to be mapped.</p>
+        <p>Click on the drop-down menu to see the choices of performance indicators 
+        from <strong>cured</strong>, <strong>defaulted</strong>,
+        <strong>dead</strong> or <strong>non-responder</strong>. On dashboard 
+        startup, <strong>cured</strong> is selected.</p>
+        <br>
+        <h4>Select map background</h4>
+        <p>From the drop-down menu, select the map baselayer to use.</p>
+        <p>Click on the drop-down menu to see the choices of 10 map baselayers
+        from <a href='https://www.mapbox.com' target='_blank'>Mapbox</a>. On dashboard 
+        startup, <strong>Terminal</strong> is selected.</p>    
+        "
+      ),
+      title = "Spatial settings",
+      footer = modalButton("Close")
+    )
+  )
+})
+
 selectInput(inputId = "chosen_month",
             label = "Select month",
             choices = c("January" = "Jan",
@@ -191,7 +310,7 @@ selectInput(inputId = "chosen_month",
             selected = NULL)
 
 selectInput(inputId = "indicator",
-            label = "Choose indicator to map",
+            label = "Select indicator to map",
             choices = c("Performance: Cured" = "cured_perc",
                         "Performance: Defaulted" = "defaulted_perc",
                         "Performance: Dead" = "dead_perc",
@@ -199,7 +318,7 @@ selectInput(inputId = "indicator",
             selected = NULL)
 
 selectInput(inputId = "map_tiles",
-            label = "Choose map background",
+            label = "Select map background",
             choices = c("Terminal" = "mapbox.terminal",
                         "Le Shine" = "mapbox.leshine",
                         "Satellite" = "mapbox.satellite",
@@ -216,9 +335,54 @@ hr()
 #br()
 ```
 
-#### Responsiveness settings
-
 ```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("Responsiveness settings"))
+
+div(style="display: inline-block;vertical-align:top;",
+    actionLink(inputId = "responsiveness_settings_info",
+               label = "",
+               icon = icon(name = "info-sign", lib = "glyphicon")))
+
+observeEvent(input$responsiveness_settings_info, {
+  showModal(
+    modalDialog(
+      HTML(
+        "<p>These settings are used for the <strong>responsiveness indicators</strong>
+        section of this dashboard.</p>
+        <br>
+        <h4>Smooth line</h4>
+        <p>This checkbox indicates whether the <strong>responsiveness indicators</strong>
+        time series plot should be smoothed using the <strong>median of 3 and 
+        average of 3</strong> approach.</p>
+        <p>On dashboard startup, the checkbox is unchecked and smoothed line 
+        for the time series is not shown on the plots.</p>
+        <br>
+        <h4>Show seasonal calendar</h4>
+        <p>This checkbox indicates whether <strong>seasonal calendar</strong> should 
+        be shown on the plots.</p>
+        <p>On dashboard startup, the checkbox is unchecked and <strong>seasonal calendar</strong>
+        is not shown on the plots.</p>
+        <br>
+        <h4>Scaling for plots</h4>
+        <p>From the drop-down menu, select the type of <strong>y-axis scale</strong> 
+        to use for responsiveness time series plots.</p>
+        <p>Click on the drop-down menu to see the choice between <strong>Free</strong>
+        and <strong>Fixed</strong>. Select <strong>Free</strong> to make
+        <strong>y-axis scale</strong> of mutli-faceted plots indpendent of each other.
+        This is good for examining time series trend for each state or for each
+        locality. Select <strong>Fixed</strong> to make <strong>y-axis scale</strong>
+        of mutli-faceted plots the same for each plot. This is good for comparing
+        the magnitude of values of the time series plots between states or between
+        localities. On dashboard startup, <strong>Free</strong> is selected.</p>
+        "
+      ),
+      title = "Responsiveness settings",
+      footer = modalButton("Close")
+    )
+  )
+})
+
 checkboxInput(inputId = "smooth",
               label = "Smooth line",
               value = FALSE)
@@ -936,7 +1100,7 @@ observeEvent(input$indicator, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -1030,7 +1194,7 @@ observeEvent(input$chosen_month, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -1124,7 +1288,7 @@ observeEvent(input$chosen_year, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -1243,7 +1407,7 @@ observeEvent(input$indicator, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -1348,7 +1512,7 @@ observeEvent(input$chosen_month, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -1453,7 +1617,7 @@ observeEvent(input$chosen_year, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -1558,7 +1722,7 @@ observeEvent(input$state_name, {
                               input$chosen_year, sep = "") %>%
                   lapply(FUN = htmltools::HTML),
                 labelOptions = labelOptions(style = list("font-weight" = "normal", 
-                                                             padding = "3px 8px"),
+                                                         padding = "3px 8px"),
                                             textsize = "12px",
                                             direction = "auto")) %>%
     addLegend(pal = pal, 
@@ -2248,14 +2412,19 @@ Case-finding
 About
 ================================================================================
 
-### About
+**About**
 
-This dashboard has been developed in support of the evaluation of the **Sudan Community-based Management of Acute Manlnutrition**. It presents
+This dashboard has been developed in support of the evaluation of the **Sudan Community-based Management of Acute Malnutrition**. It presents visualisation and analysis of the national programme's routine monitoring data from 2016-2019.
 
+<br>
 
+**How to use the dashboard**
 
+This dashboard has two main sections - *Performance* and *Responsiveness* - which can be accessed via the header tabs. The *Performance* section (shown on dashboard startup) presents analysis and visualisation of CMAM performance indicators at national, state and locality level across various time periods. The *Responsiveness* section presents analysis and visualisation of CMAM responsiveness indicators at national, state and locality level across various time periods. The dashboard has a fixed sidebar that contains various user interfaces for selecting appropriate settings for respective sections. The various settings groups include an info button which when clicked shows a modal dialog box providing information and guidance on how to choose appropriate settings.
 
-by [Emmanuel Mandalazi](https://katilingban.io/author/emmanuel-mandalazi/) and [Ernest Guevarra](https://ernest.guevarra.io). This dashboard and its source code is made available under a [GPL-3 license](https://github.com/katilingban/sudanCMAM/blob/master/LICENSE.md).
+<br>
 
+**Authors**
 
+This dashboard has been developed by [Emmanuel Mandalazi](https://katilingban.io/author/emmanuel-mandalazi/) and [Ernest Guevarra](https://ernest.guevarra.io). This dashboard and its source code is made available under a [GPL-3 license](https://github.com/katilingban/sudanCMAM/blob/master/LICENSE.md).
 
