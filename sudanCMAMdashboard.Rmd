@@ -676,11 +676,11 @@ plotlyOutput(outputId = "performanceLocalityOverall")
 Row
 --------------------------------------------------------------------------------
 
-### Cured {.value-box}
+### Cured - National {.value-box}
 
 ```{r}
-renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+yearTotal <- reactive({
+  aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
     filter(Year == input$chosen_year) %>%
@@ -688,78 +688,196 @@ renderValueBox({
            `Defaulted %` = defaulter_prop * 100,
            `Dead %` = dead_prop * 100,
            `Non-responder %` = nr_prop * 100)
-  
+})
+
+renderValueBox({
   valueBox(
-    value = paste(round(yearTotal$`Cured %`, digits = 2), "%", sep = ""),
-    caption = paste("Cured - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Cured %` <= 75) "danger" else "success"
+    value = paste(round(yearTotal()$`Cured %`, digits = 2), "%", sep = ""),
+    caption = paste("National - Cured - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal()$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal()$`Cured %` <= 75) "danger" else "success"
   )
 })
 ```
 
-### Defaulted {.value-box}
+### Defaulted - National {.value-box}
 
 ```{r}
 renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
-            data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
-    mutate(`Cured %` = cured_prop * 100,
-           `Defaulted %` = defaulter_prop * 100,
-           `Dead %` = dead_prop * 100,
-           `Non-responder %` = nr_prop * 100)
-  
   valueBox(
-    value = paste(round(yearTotal$`Defaulted %`, digits = 2), "%", sep = ""),
-    caption = paste("Defaulted - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Defaulted %` >= 15) "danger" else "success"
+    value = paste(round(yearTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
+    caption = paste("National - Defaulted - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal()$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal()$`Defaulted %` >= 15) "danger" else "success"
   )
 })
 ```
 
-### Dead {.value-box}
+### Dead - National {.value-box}
 
 ```{r}
 renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
-            data = monitoring, FUN = sum) %>% 
-    calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
-    mutate(`Cured %` = cured_prop * 100,
-           `Defaulted %` = defaulter_prop * 100,
-           `Dead %` = dead_prop * 100,
-           `Non-responder %` = nr_prop * 100)
-  
   valueBox(
-    value = paste(round(yearTotal$`Dead %`, digits = 2), "%", sep = ""),
-    caption = paste("Dead - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Dead %` >= 10) "danger" else "success"
+    value = paste(round(yearTotal()$`Dead %`, digits = 2), "%", sep = ""),
+    caption = paste("National - Dead - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal()$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal()$`Dead %` >= 10) "danger" else "success"
   )
 })
 ```
 
-### Non-responder {.value-box}
+### Non-responder - National {.value-box}
 
 ```{r}
 renderValueBox({
-  yearTotal <- aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
+  valueBox(
+    value = paste(round(yearTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
+    caption = paste("National - Non-responder - Year", input$chosen_year, sep = " "),
+    icon = if( yearTotal()$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearTotal()$`Non-responder %` >= 5) "danger" else "success"
+  )
+})
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Cured - State {.value-box}
+
+```{r}
+yearStateTotal <- reactive({
+  aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year + State, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
+    filter(Year == input$chosen_year, State == input$state_name) %>%
     mutate(`Cured %` = cured_prop * 100,
            `Defaulted %` = defaulter_prop * 100,
            `Dead %` = dead_prop * 100,
            `Non-responder %` = nr_prop * 100)
-  
+})
+
+renderValueBox({
   valueBox(
-    value = paste(round(yearTotal$`Non-responder %`, digits = 2), "%", sep = ""),
-    caption = paste("Non-responder - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal$`Non-responder %` >= 5) "danger" else "success"
+    value = paste(round(yearStateTotal()$`Cured %`, digits = 2), "%", sep = ""),
+    caption = paste(input$state_name, "State - Cured - Year", input$chosen_year, sep = " "),
+    icon = if( yearStateTotal()$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearStateTotal()$`Cured %` <= 75) "danger" else "success"
+  )
+})
+```
+
+### Defaulted - State {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = paste(round(yearStateTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
+    caption = paste(input$state_name, "State - Defaulted - Year", input$chosen_year, sep = " "),
+    icon = if( yearStateTotal()$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearStateTotal()$`Defaulted %` >= 15) "danger" else "success"
+  )
+})
+```
+
+### Dead - State {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = paste(round(yearStateTotal()$`Dead %`, digits = 2), "%", sep = ""),
+    caption = paste(input$state_name, "State - Dead - Year", input$chosen_year, sep = " "),
+    icon = if( yearStateTotal()$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearStateTotal()$`Dead %` >= 10) "danger" else "success"
+  )
+})
+```
+
+### Non-responder - State {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = paste(round(yearStateTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
+    caption = paste(input$state_name, "State - Non-responder - Year", input$chosen_year, sep = " "),
+    icon = if( yearStateTotal()$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearStateTotal()$`Non-responder %` >= 5) "danger" else "success"
+  )
+})
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Cured - Locality {.value-box}
+
+```{r}
+yearLocalityTotal <- reactive({
+  req(input$locality_name)
+  aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year + State + Locality, 
+            data = monitoring, FUN = sum) %>% 
+    calculate_performance() %>%
+    filter(Year == input$chosen_year, 
+           State == input$state_name, 
+           Locality == input$locality_name) %>%
+    mutate(`Cured %` = cured_prop * 100,
+           `Defaulted %` = defaulter_prop * 100,
+           `Dead %` = dead_prop * 100,
+           `Non-responder %` = nr_prop * 100)
+})
+
+renderValueBox({
+  valueBox(
+    value = paste(round(yearLocalityTotal()$`Cured %`, digits = 2), "%", sep = ""),
+    caption = paste(input$locality_name, "Locality,", 
+                    input$state_name, "State - Cured - Year", 
+                    input$chosen_year, sep = " "),
+    icon = if( yearLocalityTotal()$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearLocalityTotal()$`Cured %` <= 75) "danger" else "success"
+  )
+})
+```
+
+### Defaulted - Locality {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = paste(round(yearLocalityTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
+    caption = paste(input$locality_name, "Locality,", 
+                    input$state_name, "State - Defaulted - Year", 
+                    input$chosen_year, sep = " "),
+    icon = if( yearLocalityTotal()$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearLocalityTotal()$`Defaulted %` >= 15) "danger" else "success"
+  )
+})
+```
+
+### Dead - Locality {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = paste(round(yearLocalityTotal()$`Dead %`, digits = 2), "%", sep = ""),
+    caption = paste(input$locality_name, "Locality,", 
+                    input$state_name, "State - Dead - Year", 
+                    input$chosen_year, sep = " "),
+    icon = if( yearLocalityTotal()$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearLocalityTotal()$`Dead %` >= 10) "danger" else "success"
+  )
+})
+```
+
+### Non-responder - Locality {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = paste(round(yearLocalityTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
+    caption = paste(input$locality_name, "Locality,",
+                    input$state_name, "State - Non-responder - Year", 
+                    input$chosen_year, sep = " "),
+    icon = if( yearLocalityTotal()$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if (yearLocalityTotal()$`Non-responder %` >= 5) "danger" else "success"
   )
 })
 ```
