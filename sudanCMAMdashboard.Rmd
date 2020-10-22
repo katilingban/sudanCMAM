@@ -195,9 +195,10 @@ selectInput(inputId = "state_name",
             selected = NULL)
 
 output$select_locality <- renderUI({
+  req(input$state_name)
   selectInput(inputId = "locality_name",
               label = "Select locality",
-              choices = monitoring$Locality[monitoring$State == input$state_name],
+              choices = unique(monitoring$Locality[monitoring$State == input$state_name]),
               selected = NULL)
 })
 
@@ -495,6 +496,7 @@ plotlyOutput(outputId = "performanceOverall")
 
 ```{r, fig.height = 5}
 xStateOverall <- reactive({
+  req(input$state_name)
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ State + Month + Year, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
@@ -512,6 +514,7 @@ xStateOverall <- reactive({
 })
 
 output$performanceStateOverall <- renderPlotly({
+  req(input$state_name)
   z <- xStateOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = State)) +
     geom_line(mapping = aes(y = `Cured %`, colour = "Cured",
@@ -585,7 +588,7 @@ plotlyOutput(outputId = "performanceStateOverall")
 
 ```{r, fig.height = 5}
 xLocalityOverall <- reactive({
-  req(input$locality_name)
+  req(input$state_name, input$locality_name)
   monitoring %>% 
     calculate_performance() %>%
     filter(State == input$state_name,
@@ -603,6 +606,7 @@ xLocalityOverall <- reactive({
 })
 
 output$performanceLocalityOverall <- renderPlotly({
+  req(xLocalityOverall(), input$locality_name)
   z <- xLocalityOverall() %>% 
     ggplot(mapping = aes(x = MonthYear, group = State)) +
     geom_line(mapping = aes(y = `Cured %`, colour = "Cured",
@@ -746,6 +750,7 @@ Row
 
 ```{r}
 yearStateTotal <- reactive({
+  req(input$state_name)
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year + State, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
@@ -812,7 +817,7 @@ Row
 
 ```{r}
 yearLocalityTotal <- reactive({
-  req(input$locality_name)
+  req(input$state_name, input$locality_name)
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year + State + Locality, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
@@ -826,13 +831,14 @@ yearLocalityTotal <- reactive({
 })
 
 renderValueBox({
+  req(yearLocalityTotal(), input$locality_name)
   valueBox(
     value = paste(round(yearLocalityTotal()$`Cured %`, digits = 2), "%", sep = ""),
     caption = paste(input$locality_name, "Locality,", 
                     input$state_name, "State - Cured - Year", 
                     input$chosen_year, sep = " "),
-    icon = if( yearLocalityTotal()$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearLocalityTotal()$`Cured %` <= 75) "danger" else "success"
+    icon = if(req(yearLocalityTotal())$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if(req(yearLocalityTotal())$`Cured %` <= 75) "danger" else "success"
   )
 })
 ```
@@ -841,13 +847,14 @@ renderValueBox({
 
 ```{r}
 renderValueBox({
+  req(yearLocalityTotal(), input$locality_name)
   valueBox(
     value = paste(round(yearLocalityTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
     caption = paste(input$locality_name, "Locality,", 
                     input$state_name, "State - Defaulted - Year", 
                     input$chosen_year, sep = " "),
-    icon = if( yearLocalityTotal()$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearLocalityTotal()$`Defaulted %` >= 15) "danger" else "success"
+    icon = if(req(yearLocalityTotal())$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if(req(yearLocalityTotal())$`Defaulted %` >= 15) "danger" else "success"
   )
 })
 ```
@@ -856,13 +863,14 @@ renderValueBox({
 
 ```{r}
 renderValueBox({
+  req(yearLocalityTotal(), input$locality_name)
   valueBox(
     value = paste(round(yearLocalityTotal()$`Dead %`, digits = 2), "%", sep = ""),
     caption = paste(input$locality_name, "Locality,", 
                     input$state_name, "State - Dead - Year", 
                     input$chosen_year, sep = " "),
-    icon = if( yearLocalityTotal()$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearLocalityTotal()$`Dead %` >= 10) "danger" else "success"
+    icon = if(req(yearLocalityTotal())$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if(req(yearLocalityTotal())$`Dead %` >= 10) "danger" else "success"
   )
 })
 ```
@@ -871,13 +879,14 @@ renderValueBox({
 
 ```{r}
 renderValueBox({
+  req(yearLocalityTotal(), input$locality_name)
   valueBox(
     value = paste(round(yearLocalityTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
     caption = paste(input$locality_name, "Locality,",
                     input$state_name, "State - Non-responder - Year", 
                     input$chosen_year, sep = " "),
-    icon = if( yearLocalityTotal()$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearLocalityTotal()$`Non-responder %` >= 5) "danger" else "success"
+    icon = if(req(yearLocalityTotal())$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
+    color = if(req(yearLocalityTotal())$`Non-responder %` >= 5) "danger" else "success"
   )
 })
 ```
