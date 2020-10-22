@@ -197,7 +197,7 @@ selectInput(inputId = "state_name",
 output$select_locality <- renderUI({
   selectInput(inputId = "locality_name",
               label = "Select locality",
-              choices = monitoring$Locality[monitoring$State == input$state_name],
+              choices = unique(monitoring$Locality[monitoring$State == input$state_name]),
               selected = NULL)
 })
 
