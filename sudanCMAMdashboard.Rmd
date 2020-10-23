@@ -458,7 +458,9 @@ output$performanceOverall <- renderPlotly({
                                    "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(title = "Performance over time - 2016 to 2019", y = "%", x = "")
+    labs(title = "National monthly performance over time - 2016 to 2019", 
+         y = "%", 
+         x = "")
   
   sphere_cure <- geom_hline(yintercept = 75, 
                             colour = "darkgreen", 
@@ -548,9 +550,11 @@ output$performanceStateOverall <- renderPlotly({
                                    "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(title = paste("Performance over time - 2016 to 2019 - ", 
-                       input$state_name, " State", sep = ""),
-         y = "%", x = "")
+    labs(title = paste(input$state_name, 
+                       " State monthly performance over time - 2016 to 2019", 
+                       sep = ""),
+         y = "%", 
+         x = "")
   
   sphere_cure <- geom_hline(yintercept = 75, 
                             colour = "darkgreen", 
@@ -640,10 +644,11 @@ output$performanceLocalityOverall <- renderPlotly({
                                    "Non-responder" = "gray50")) +
     scale_y_continuous(limits = c(0, 100),
                                   breaks = seq(from = 0, to = 100, by = 10)) +
-    labs(title = paste("Performance over time - 2016 to 2019 - ",
-                       input$locality_name, " Locality, ",
-                       input$state_name, " State", sep = ""),
-         y = "%", x = "")
+    labs(title = paste(input$locality_name, " Locality, ",
+                       input$state_name, 
+                       " State monthly performance over time - 2016 to 2019"),
+         y = "%", 
+         x = "")
   
   sphere_cure <- geom_hline(yintercept = 75, 
                             colour = "darkgreen", 
@@ -677,218 +682,252 @@ output$performanceLocalityOverall <- renderPlotly({
 plotlyOutput(outputId = "performanceLocalityOverall")
 ```
 
-Row
+Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
-### Cured - National {.value-box}
+### National
 
-```{r}
+```{r, fig.height = 5}
 yearTotal <- reactive({
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year, 
             data = monitoring, FUN = sum) %>% 
     calculate_performance() %>%
-    filter(Year == input$chosen_year) %>%
     mutate(`Cured %` = cured_prop * 100,
            `Defaulted %` = defaulter_prop * 100,
            `Dead %` = dead_prop * 100,
            `Non-responder %` = nr_prop * 100)
 })
 
-renderValueBox({
-  valueBox(
-    value = paste(round(yearTotal()$`Cured %`, digits = 2), "%", sep = ""),
-    caption = paste("National - Cured - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal()$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal()$`Cured %` <= 75) "danger" else "success"
-  )
+output$performanceYearOverall <- renderPlotly({
+  z <- yearTotal() %>% 
+    ggplot(mapping = aes(x = Year, group = 1)) +
+    geom_line(mapping = aes(y = `Cured %`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured %`, 
+                                               digits = 1), "%\n",
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Dead %`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead %`, 
+                                               digits = 1), "%\n",
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Defaulted %`, colour = "Defaulted",
+                            text = paste("Defaulted: ", 
+                                         round(`Defaulted %`,
+                                               digits = 1), "%\n", 
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Non-responder %`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder %`,
+                                               digits = 1), "%\n", 
+                                         Year, sep = "")), 
+              alpha = 0.5, size = 1) +
+    scale_colour_manual(name = "",
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
+    scale_y_continuous(limits = c(0, 100),
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = "National yearly performance over time - 2016 to 2019", 
+         y = "%", 
+         x = "")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + 
+      unicef_theme
+  } else {
+    z <- z + 
+      unicef_theme
+  }
+  
+  ggplotly(p = z, tooltip = "text") %>%
+    layout(legend = list(orientation = "h", y = 1.075))
 })
+
+plotlyOutput(outputId = "performanceYearOverall")
 ```
 
-### Defaulted - National {.value-box}
+### State
 
-```{r}
-renderValueBox({
-  valueBox(
-    value = paste(round(yearTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
-    caption = paste("National - Defaulted - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal()$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal()$`Defaulted %` >= 15) "danger" else "success"
-  )
-})
-```
-
-### Dead - National {.value-box}
-
-```{r}
-renderValueBox({
-  valueBox(
-    value = paste(round(yearTotal()$`Dead %`, digits = 2), "%", sep = ""),
-    caption = paste("National - Dead - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal()$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal()$`Dead %` >= 10) "danger" else "success"
-  )
-})
-```
-
-### Non-responder - National {.value-box}
-
-```{r}
-renderValueBox({
-  valueBox(
-    value = paste(round(yearTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
-    caption = paste("National - Non-responder - Year", input$chosen_year, sep = " "),
-    icon = if( yearTotal()$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearTotal()$`Non-responder %` >= 5) "danger" else "success"
-  )
-})
-```
-
-Row
---------------------------------------------------------------------------------
-
-### Cured - State {.value-box}
-
-```{r}
+```{r, fig.height = 5}
 yearStateTotal <- reactive({
-  req(input$state_name)
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year + State, 
-            data = monitoring, FUN = sum) %>% 
+            data = monitoring, FUN = sum) %>%
+    filter(State == input$state_name) %>%
     calculate_performance() %>%
-    filter(Year == input$chosen_year, State == input$state_name) %>%
     mutate(`Cured %` = cured_prop * 100,
            `Defaulted %` = defaulter_prop * 100,
            `Dead %` = dead_prop * 100,
            `Non-responder %` = nr_prop * 100)
 })
 
-renderValueBox({
-  valueBox(
-    value = paste(round(yearStateTotal()$`Cured %`, digits = 2), "%", sep = ""),
-    caption = paste(input$state_name, "State - Cured - Year", input$chosen_year, sep = " "),
-    icon = if( yearStateTotal()$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearStateTotal()$`Cured %` <= 75) "danger" else "success"
-  )
+
+output$performanceYearStateOverall <- renderPlotly({
+  z <- yearStateTotal() %>%
+    ggplot(mapping = aes(x = Year, group = 1)) +
+    geom_line(mapping = aes(y = `Cured %`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured %`, 
+                                               digits = 1), "%\n",
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Dead %`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead %`, 
+                                               digits = 1), "%\n",
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Defaulted %`, colour = "Defaulted",
+                            text = paste("Defaulted: ", 
+                                         round(`Defaulted %`,
+                                               digits = 1), "%\n", 
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Non-responder %`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder %`,
+                                               digits = 1), "%\n", 
+                                         Year, sep = "")), 
+              alpha = 0.5, size = 1) +
+    scale_colour_manual(name = "",
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
+    scale_y_continuous(limits = c(0, 100),
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = paste(input$state_name, 
+                       " State yearly performance over time - 2016 to 2019", 
+                       sep = ""), 
+         y = "%",
+         x = "")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + 
+      unicef_theme
+  } else {
+    z <- z + 
+      unicef_theme
+  }
+  
+  ggplotly(p = z, tooltip = "text") %>%
+    layout(legend = list(orientation = "h", y = 1.075))
 })
+
+plotlyOutput(outputId = "performanceYearStateOverall")
 ```
 
-### Defaulted - State {.value-box}
+### Locality
 
-```{r}
-renderValueBox({
-  valueBox(
-    value = paste(round(yearStateTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
-    caption = paste(input$state_name, "State - Defaulted - Year", input$chosen_year, sep = " "),
-    icon = if( yearStateTotal()$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearStateTotal()$`Defaulted %` >= 15) "danger" else "success"
-  )
-})
-```
-
-### Dead - State {.value-box}
-
-```{r}
-renderValueBox({
-  valueBox(
-    value = paste(round(yearStateTotal()$`Dead %`, digits = 2), "%", sep = ""),
-    caption = paste(input$state_name, "State - Dead - Year", input$chosen_year, sep = " "),
-    icon = if( yearStateTotal()$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearStateTotal()$`Dead %` >= 10) "danger" else "success"
-  )
-})
-```
-
-### Non-responder - State {.value-box}
-
-```{r}
-renderValueBox({
-  valueBox(
-    value = paste(round(yearStateTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
-    caption = paste(input$state_name, "State - Non-responder - Year", input$chosen_year, sep = " "),
-    icon = if( yearStateTotal()$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if (yearStateTotal()$`Non-responder %` >= 5) "danger" else "success"
-  )
-})
-```
-
-Row
---------------------------------------------------------------------------------
-
-### Cured - Locality {.value-box}
-
-```{r}
+```{r, fig.height = 5}
 yearLocalityTotal <- reactive({
-  req(input$state_name, input$locality_name)
   aggregate(cbind(Cured, Death, Default, `Non-Responder`) ~ Year + State + Locality, 
-            data = monitoring, FUN = sum) %>% 
+            data = monitoring, FUN = sum) %>%
+    filter(State == input$state_name, Locality == input$locality_name) %>%
     calculate_performance() %>%
-    filter(Year == input$chosen_year, 
-           State == input$state_name, 
-           Locality == input$locality_name) %>%
     mutate(`Cured %` = cured_prop * 100,
            `Defaulted %` = defaulter_prop * 100,
            `Dead %` = dead_prop * 100,
            `Non-responder %` = nr_prop * 100)
 })
 
-renderValueBox({
-  req(yearLocalityTotal(), input$locality_name)
-  valueBox(
-    value = paste(round(yearLocalityTotal()$`Cured %`, digits = 2), "%", sep = ""),
-    caption = paste(input$locality_name, "Locality,", 
-                    input$state_name, "State - Cured - Year", 
-                    input$chosen_year, sep = " "),
-    icon = if(req(yearLocalityTotal())$`Cured %` <= 75) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if(req(yearLocalityTotal())$`Cured %` <= 75) "danger" else "success"
-  )
+output$performanceYearLocalityOverall <- renderPlotly({
+  z <- yearLocalityTotal() %>%
+    ggplot(mapping = aes(x = Year, group = 1)) +
+    geom_line(mapping = aes(y = `Cured %`, colour = "Cured",
+                            text = paste("Cured: ", 
+                                         round(`Cured %`, 
+                                               digits = 1), "%\n",
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Dead %`, colour = "Dead",
+                            text = paste("Dead: ",
+                                         round(`Dead %`, 
+                                               digits = 1), "%\n",
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Defaulted %`, colour = "Defaulted",
+                            text = paste("Defaulted: ", 
+                                         round(`Defaulted %`,
+                                               digits = 1), "%\n", 
+                                         Year, sep = "")), 
+              size = 1) +
+    geom_line(mapping = aes(y = `Non-responder %`, colour = "Non-responder",
+                            text = paste("Non-responder: ",
+                                         round(`Non-responder %`,
+                                               digits = 1), "%\n", 
+                                         Year, sep = "")), 
+              alpha = 0.5, size = 1) +
+    scale_colour_manual(name = "",
+                        values = c("Cured" = "darkgreen", 
+                                   "Dead" = "black", 
+                                   "Defaulted" = "red", 
+                                   "Non-responder" = "gray50")) +
+    scale_y_continuous(limits = c(0, 100),
+                                  breaks = seq(from = 0, to = 100, by = 10)) +
+    labs(title = paste(input$locality_name, " Locality, ",
+                       input$state_name, 
+                       " State yearly performance over time - 2016 to 2019", 
+                       sep = ""), 
+         y = "%",
+         x = "")
+  
+  sphere_cure <- geom_hline(yintercept = 75, 
+                            colour = "darkgreen", 
+                            linetype = 2, size = 0.25)
+  
+  sphere_default <- geom_hline(yintercept = 15, 
+                               colour = "red", 
+                               linetype = 2, size = 0.25)
+    
+  sphere_dead <- geom_hline(yintercept = 10, 
+                            colour = "black", 
+                            linetype = 2, size = 0.25)
+  
+  ## Assemble plot
+  if(input$standards) {
+    z <- z + sphere_cure + sphere_default + sphere_dead + 
+      unicef_theme
+  } else {
+    z <- z + 
+      unicef_theme
+  }
+  
+  ggplotly(p = z, tooltip = "text") %>%
+    layout(legend = list(orientation = "h", y = 1.075))
 })
-```
 
-### Defaulted - Locality {.value-box}
-
-```{r}
-renderValueBox({
-  req(yearLocalityTotal(), input$locality_name)
-  valueBox(
-    value = paste(round(yearLocalityTotal()$`Defaulted %`, digits = 2), "%", sep = ""),
-    caption = paste(input$locality_name, "Locality,", 
-                    input$state_name, "State - Defaulted - Year", 
-                    input$chosen_year, sep = " "),
-    icon = if(req(yearLocalityTotal())$`Defaulted %` >= 15) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if(req(yearLocalityTotal())$`Defaulted %` >= 15) "danger" else "success"
-  )
-})
-```
-
-### Dead - Locality {.value-box}
-
-```{r}
-renderValueBox({
-  req(yearLocalityTotal(), input$locality_name)
-  valueBox(
-    value = paste(round(yearLocalityTotal()$`Dead %`, digits = 2), "%", sep = ""),
-    caption = paste(input$locality_name, "Locality,", 
-                    input$state_name, "State - Dead - Year", 
-                    input$chosen_year, sep = " "),
-    icon = if(req(yearLocalityTotal())$`Dead %` >= 10) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if(req(yearLocalityTotal())$`Dead %` >= 10) "danger" else "success"
-  )
-})
-```
-
-### Non-responder - Locality {.value-box}
-
-```{r}
-renderValueBox({
-  req(yearLocalityTotal(), input$locality_name)
-  valueBox(
-    value = paste(round(yearLocalityTotal()$`Non-responder %`, digits = 2), "%", sep = ""),
-    caption = paste(input$locality_name, "Locality,",
-                    input$state_name, "State - Non-responder - Year", 
-                    input$chosen_year, sep = " "),
-    icon = if(req(yearLocalityTotal())$`Non-responder %` >= 5) "fa-thumbs-down" else "fa-thumbs-up",
-    color = if(req(yearLocalityTotal())$`Non-responder %` >= 5) "danger" else "success"
-  )
-})
+plotlyOutput(outputId = "performanceYearLocalityOverall")
 ```
 
 Row {.tabset .tabset-fade}
