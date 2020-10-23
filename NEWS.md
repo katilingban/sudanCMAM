@@ -1,3 +1,10 @@
+# sudanCMAM v0.1.3
+
+In this version:
+
+* added visualisation of yearly aggregate estimates of CMAM performance at 
+national, state and locality levels
+
 # sudanCMAM v0.1.2
 
 In this version:
