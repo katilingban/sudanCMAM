@@ -2484,10 +2484,114 @@ output$locality_defaulters <- renderPlotly({
 plotlyOutput(outputId = "locality_defaulters")
 ```
 
-<!---
+
 Case-finding
 ================================================================================
---->
+
+```{r muac1}
+## Tidy the list
+x1 <- muac_admission[[1]] %>%
+  pivot_longer(cols = `Tahdi Osisi`:Baryay, 
+               names_to = "health_facilities", 
+               values_to = "n")
+
+x2 <- muac_admission[[2]] %>%
+  pivot_longer(cols = `Alhara alula`:Omrahaw, 
+               names_to = "health_facilities", 
+               values_to = "n")
+
+x3 <- muac_admission[[3]] %>%
+  pivot_longer(cols = `Mukram`:`Al Kuaty hospital`, 
+               names_to = "health_facilities", 
+               values_to = "n")
+
+x4 <- muac_admission[[4]] %>%
+  pivot_longer(cols = `8 - Arab`:`Reara`, 
+               names_to = "health_facilities", 
+               values_to = "n")
+
+## Concatenate
+x <- rbind(x1, x2, x3, x4)
+```
+
+Row <!--- {.tabset .tabset-fade} --->
+--------------------------------------------------------------------------------
+
+### By state
+
+```{r muac2, fig.height = 6}
+muac_state <- aggregate(n ~ state + muac, data = x, FUN = sum)
+
+median_muac <- muac_state %>%
+  split(f = muac_state$state) %>%
+  lapply(FUN = function(x) median(rep(x$muac, x$n), na.rm = TRUE)) %>%
+  unlist()
+
+median_muac <- names(median_muac) %>%
+  data.frame(median_muac)
+
+names(median_muac) <- c("state", "median muac")
+row.names(median_muac) <- 1:nrow(median_muac)
+  
+output$state_muac <- renderPlotly({
+  z <- muac_state %>%
+    ggplot(mapping = aes(x = muac, y = n)) +
+    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_vline(data = median_muac,
+               mapping = aes(xintercept = `median muac`), 
+               colour = unicef_darkblue, 
+               linetype = 2, size = 0.5) +
+    scale_x_reverse(breaks = seq(from = 115, to = 60, by = -5)) +
+    labs(title = "MUAC at Admission by State", x = "MUAC (mm)") +
+    facet_wrap(. ~ state, ncol = 3) +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "state_muac")
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### By locality
+
+```{r muac3, fig.height = 8}
+muac_locality <- aggregate(n ~ state + locality + muac, data = x, FUN = sum)
+
+median_muac_locality <- muac_locality %>%
+  split(f = list(muac_locality$state, muac_locality$locality)) %>%
+  lapply(FUN = function(x) median(rep(x$muac, x$n), na.rm = TRUE)) %>%
+  unlist()
+
+
+median_muac_locality <- stringr::str_split(string = names(median_muac_locality), 
+                                           pattern = "\\.", 
+                                           simplify = TRUE) %>%
+  data.frame(median_muac_locality) %>%
+  rename(state = X1, locality = X2, `median muac` = median_muac_locality)
+
+row.names(median_muac_locality) <- 1:nrow(median_muac_locality)
+
+output$locality_muac <- renderPlotly({
+  z <- muac_locality %>%
+    ggplot(mapping = aes(x = muac, y = n)) +
+    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_vline(data = median_muac_locality,
+               mapping = aes(xintercept = `median muac`), 
+               colour = unicef_darkblue, 
+               linetype = 2, size = 0.5) +
+    scale_x_reverse(breaks = seq(from = 115, to = 60, by = -5)) +
+    labs(title = "MUAC at Admission by Locality", x = "MUAC (mm)") +
+    facet_grid(locality ~ state) +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "locality_muac")
+```
 
 About
 ================================================================================
