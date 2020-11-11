@@ -1,3 +1,10 @@
+# sudanCMAM v0.1.4
+
+In this version:
+
+* added visualisation of MUAC at admission, average weight gain and
+length-of-stay
+
 # sudanCMAM v0.1.3
 
 In this version:
