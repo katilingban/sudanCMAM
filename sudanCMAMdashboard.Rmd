@@ -2593,6 +2593,130 @@ output$locality_muac <- renderPlotly({
 plotlyOutput(outputId = "locality_muac")
 ```
 
+Effectiveness
+================================================================================
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+```{r los1}
+length_of_stay <- otp_beneficiaries %>%
+  calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
+  mutate(state = "Kassala") %>%
+  dplyr::relocate(state, .before = locality)
+
+median_los_state <- length_of_stay %>%
+  split(f = length_of_stay$state) %>%
+  lapply(FUN = function(x) median(x$los, na.rm = TRUE)) %>%
+  unlist()
+
+median_los_state <- names(median_los_state) %>%
+  data.frame(median_los_state)
+
+names(median_los_state) <- c("state", "median length-of-stay")
+row.names(median_los_state) <- 1:nrow(median_los_state)
+
+median_los_locality <- length_of_stay %>%
+  split(f = list(length_of_stay$state, length_of_stay$locality)) %>%
+  lapply(FUN = function(x) median(x$los, na.rm = TRUE)) %>%
+  unlist()
+
+median_los_locality <- stringr::str_split(string = names(median_los_locality), 
+                                          pattern = "\\.", 
+                                          simplify = TRUE) %>%
+  data.frame(median_los_locality) %>%
+  rename(state = X1, locality = X2, `median length-of-stay` = median_los_locality)
+
+row.names(median_los_locality) <- 1:nrow(median_los_locality)
+```
+
+### By state
+
+```{r los2, fig.height = 8}
+output$los_state <- renderPlotly({
+  los_state_plot <- length_of_stay %>%
+    ggplot(mapping = aes(x = state, y = los)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    labs(title = "Median length-of-stay by state",
+         x = "",
+         y = "Length-of-stay (days)") +
+    unicef_theme
+  
+  ggplotly(p = los_state_plot)
+})
+
+plotlyOutput(outputId = "los_state")
+```
+
+### By locality
+
+```{r los3, fig.height = 8}
+output$los_locality <- renderPlotly({
+  los_locality_plot <- length_of_stay %>%
+    ggplot(mapping = aes(x = locality, y = los)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    labs(title = "Median length-of-stay by locality",
+         x = "",
+         y = "Length-of-stay (days)") +
+    facet_wrap(state ~ .) +
+    unicef_theme
+  
+  ggplotly(p = los_locality_plot)
+})
+
+plotlyOutput(outputId = "los_locality")
+```
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+```{r wtGain1}
+wt_gain <- otp_beneficiaries %>%
+  mutate(state = "Kassala") %>%
+  dplyr::relocate(state, .before = locality) %>%
+  calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
+  mutate(wtGain = ((diswt - wt) * 1000) / (wt * los)) %>%
+  filter(wtGain >= 0)
+```
+
+### By state
+
+```{r wtGain2, fig.height = 8}
+output$wt_gain_state <- renderPlotly({
+  z <- wt_gain %>%
+    ggplot(mapping = aes(x = state, y = wtGain)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    labs(title = "Average weight gain by state",
+         x = "",
+         y = "Average weight gain (g/kg/day)") +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "wt_gain_state")
+```
+
+### By locality
+
+```{r wtGain3, fig.height = 8}
+output$wt_gain_locality <- renderPlotly({
+  z <- wt_gain %>%
+    ggplot(mapping = aes(x = locality, y = wtGain)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    labs(title = "Average weight gain by locality",
+         x = "",
+         y = "Average weight gain (g/kg/day)") +
+    facet_wrap(state ~ .) +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "wt_gain_locality")
+```
+
+
 About
 ================================================================================
 
