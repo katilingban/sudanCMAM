@@ -1,18 +1,28 @@
-# sudanCMAM v0.1.4
+# Sudan CMAM Dashboard v0.1.5
+
+In this version:
+
+* added visualisation of time-to-travel metrics
+
+* fixed the y-axis of length-of-stay and average weight gain plots
+
+* edited *About* section
+
+# Sudan CMAM Dashboard v0.1.4
 
 In this version:
 
 * added visualisation of MUAC at admission, average weight gain and
 length-of-stay
 
-# sudanCMAM v0.1.3
+# Sudan CMAM Dashboard v0.1.3
 
 In this version:
 
 * added visualisation of yearly aggregate estimates of CMAM performance at 
 national, state and locality levels
 
-# sudanCMAM v0.1.2
+# Sudan CMAM Dashboard v0.1.2
 
 In this version:
 
@@ -32,7 +42,7 @@ NA (now shows no data) and NaN (now shows no discharges)
 
 * Added about section
 
-# sudanCMAM v0.1.1
+# Sudan CMAM Dashboard v0.1.1
 
 In this version:
 

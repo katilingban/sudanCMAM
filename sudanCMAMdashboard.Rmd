@@ -2484,6 +2484,140 @@ output$locality_defaulters <- renderPlotly({
 plotlyOutput(outputId = "locality_defaulters")
 ```
 
+Effectiveness
+================================================================================
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+```{r los1}
+length_of_stay <- otp_beneficiaries %>%
+  calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
+  mutate(state = "Kassala") %>%
+  dplyr::relocate(state, .before = locality)
+
+median_los_state <- length_of_stay %>%
+  split(f = length_of_stay$state) %>%
+  lapply(FUN = function(x) median(x$los, na.rm = TRUE)) %>%
+  unlist()
+
+median_los_state <- names(median_los_state) %>%
+  data.frame(median_los_state)
+
+names(median_los_state) <- c("state", "median length-of-stay")
+row.names(median_los_state) <- 1:nrow(median_los_state)
+
+median_los_locality <- length_of_stay %>%
+  split(f = list(length_of_stay$state, length_of_stay$locality)) %>%
+  lapply(FUN = function(x) median(x$los, na.rm = TRUE)) %>%
+  unlist()
+
+median_los_locality <- stringr::str_split(string = names(median_los_locality), 
+                                          pattern = "\\.", 
+                                          simplify = TRUE) %>%
+  data.frame(median_los_locality) %>%
+  rename(state = X1, locality = X2, `median length-of-stay` = median_los_locality)
+
+row.names(median_los_locality) <- 1:nrow(median_los_locality)
+```
+
+### By state
+
+```{r los2, fig.height = 8}
+output$los_state <- renderPlotly({
+  los_state_plot <- length_of_stay %>%
+    ggplot(mapping = aes(x = state, y = los)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    scale_y_continuous(breaks = seq(from = 0, 
+                                    to = max(length_of_stay$los), 
+                                    by = 10)) +
+    labs(title = "Median length-of-stay by state",
+         x = "",
+         y = "Length-of-stay (days)") +
+    unicef_theme
+  
+  ggplotly(p = los_state_plot)
+})
+
+plotlyOutput(outputId = "los_state")
+```
+
+### By locality
+
+```{r los3, fig.height = 8}
+output$los_locality <- renderPlotly({
+  los_locality_plot <- length_of_stay %>%
+    ggplot(mapping = aes(x = locality, y = los)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    scale_y_continuous(breaks = seq(from = 0, 
+                                    to = max(length_of_stay$los), 
+                                    by = 10)) +
+    labs(title = "Median length-of-stay by locality",
+         x = "",
+         y = "Length-of-stay (days)") +
+    facet_wrap(state ~ .) +
+    unicef_theme
+  
+  ggplotly(p = los_locality_plot)
+})
+
+plotlyOutput(outputId = "los_locality")
+```
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+```{r wtGain1}
+wt_gain <- otp_beneficiaries %>%
+  mutate(state = "Kassala") %>%
+  dplyr::relocate(state, .before = locality) %>%
+  calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
+  mutate(wtGain = ((diswt - wt) * 1000) / (wt * los)) %>%
+  filter(wtGain >= 0)
+```
+
+### By state
+
+```{r wtGain2, fig.height = 8}
+output$wt_gain_state <- renderPlotly({
+  z <- wt_gain %>%
+    ggplot(mapping = aes(x = state, y = wtGain)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    scale_y_continuous(breaks = seq(from = 0, 
+                                    to = max(wt_gain$wtGain), 
+                                    by = 2)) +
+    labs(title = "Average weight gain by state",
+         x = "",
+         y = "Average weight gain (g/kg/day)") +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "wt_gain_state")
+```
+
+### By locality
+
+```{r wtGain3, fig.height = 8}
+output$wt_gain_locality <- renderPlotly({
+  z <- wt_gain %>%
+    ggplot(mapping = aes(x = locality, y = wtGain)) +
+    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    scale_y_continuous(breaks = seq(from = 0, 
+                                    to = max(wt_gain$wtGain), 
+                                    by = 2)) +
+    labs(title = "Average weight gain by locality",
+         x = "",
+         y = "Average weight gain (g/kg/day)") +
+    facet_wrap(state ~ .) +
+    unicef_theme
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "wt_gain_locality")
+```
 
 Case-finding
 ================================================================================
@@ -2593,129 +2727,73 @@ output$locality_muac <- renderPlotly({
 plotlyOutput(outputId = "locality_muac")
 ```
 
-Effectiveness
+Access
 ================================================================================
 
-Row {.tabset .tabset-fade}
+Row
 --------------------------------------------------------------------------------
-
-```{r los1}
-length_of_stay <- otp_beneficiaries %>%
-  calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
-  mutate(state = "Kassala") %>%
-  dplyr::relocate(state, .before = locality)
-
-median_los_state <- length_of_stay %>%
-  split(f = length_of_stay$state) %>%
-  lapply(FUN = function(x) median(x$los, na.rm = TRUE)) %>%
-  unlist()
-
-median_los_state <- names(median_los_state) %>%
-  data.frame(median_los_state)
-
-names(median_los_state) <- c("state", "median length-of-stay")
-row.names(median_los_state) <- 1:nrow(median_los_state)
-
-median_los_locality <- length_of_stay %>%
-  split(f = list(length_of_stay$state, length_of_stay$locality)) %>%
-  lapply(FUN = function(x) median(x$los, na.rm = TRUE)) %>%
-  unlist()
-
-median_los_locality <- stringr::str_split(string = names(median_los_locality), 
-                                          pattern = "\\.", 
-                                          simplify = TRUE) %>%
-  data.frame(median_los_locality) %>%
-  rename(state = X1, locality = X2, `median length-of-stay` = median_los_locality)
-
-row.names(median_los_locality) <- 1:nrow(median_los_locality)
-```
 
 ### By state
 
-```{r los2, fig.height = 8}
-output$los_state <- renderPlotly({
-  los_state_plot <- length_of_stay %>%
-    ggplot(mapping = aes(x = state, y = los)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    labs(title = "Median length-of-stay by state",
-         x = "",
-         y = "Length-of-stay (days)") +
-    unicef_theme
-  
-  ggplotly(p = los_state_plot)
-})
-
-plotlyOutput(outputId = "los_state")
-```
-
-### By locality
-
-```{r los3, fig.height = 8}
-output$los_locality <- renderPlotly({
-  los_locality_plot <- length_of_stay %>%
-    ggplot(mapping = aes(x = locality, y = los)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    labs(title = "Median length-of-stay by locality",
-         x = "",
-         y = "Length-of-stay (days)") +
-    facet_wrap(state ~ .) +
-    unicef_theme
-  
-  ggplotly(p = los_locality_plot)
-})
-
-plotlyOutput(outputId = "los_locality")
-```
-
-Row {.tabset .tabset-fade}
---------------------------------------------------------------------------------
-
-```{r wtGain1}
-wt_gain <- otp_beneficiaries %>%
-  mutate(state = "Kassala") %>%
-  dplyr::relocate(state, .before = locality) %>%
-  calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
-  mutate(wtGain = ((diswt - wt) * 1000) / (wt * los)) %>%
-  filter(wtGain >= 0)
-```
-
-### By state
-
-```{r wtGain2, fig.height = 8}
-output$wt_gain_state <- renderPlotly({
-  z <- wt_gain %>%
-    ggplot(mapping = aes(x = state, y = wtGain)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    labs(title = "Average weight gain by state",
-         x = "",
-         y = "Average weight gain (g/kg/day)") +
-    unicef_theme
+```{r ttt_state}
+output$ttt_state_plot <- renderPlotly({
+  z <- time_to_travel %>%
+    tidyr::pivot_longer(cols = `30 or less`:`more than 120`,
+                        names_to = "Time-to-travel",
+                        values_to = "n") %>%
+    dplyr::mutate(`Time-to-travel` = paste(`Time-to-travel`, "minutes", sep = " ")) %>%
+    dplyr::mutate(`Time-to-travel` = stringr::str_replace_all(string = `Time-to-travel`, 
+                                                              pattern = " minutes", 
+                                                              replacement = "\nminutes")) %>%
+    dplyr::group_by(State, Category, `Time-to-travel`) %>%
+    dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
+    ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
+    geom_col(fill = unicef_blue, alpha = 0.7) +
+    labs(title = "Time-to-travel (in minutes) by beneficiary type and by state",
+         x = "") +
+    facet_grid(rows = vars(Category), cols = vars(State), scales = "free_y") +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 8))
   
   ggplotly(p = z)
 })
 
-plotlyOutput(outputId = "wt_gain_state")
+plotlyOutput(outputId = "ttt_state_plot")
 ```
+
+Row
+--------------------------------------------------------------------------------
 
 ### By locality
 
-```{r wtGain3, fig.height = 8}
-output$wt_gain_locality <- renderPlotly({
-  z <- wt_gain %>%
-    ggplot(mapping = aes(x = locality, y = wtGain)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    labs(title = "Average weight gain by locality",
-         x = "",
-         y = "Average weight gain (g/kg/day)") +
-    facet_wrap(state ~ .) +
-    unicef_theme
+```{r ttt_locality}
+output$ttt_locality_plot <- renderPlotly({
+  z <- time_to_travel %>%
+    tidyr::pivot_longer(cols = `30 or less`:`more than 120`,
+                        names_to = "Time-to-travel",
+                        values_to = "n") %>%
+    dplyr::mutate(`Time-to-travel` = paste(`Time-to-travel`, "minutes", sep = " ")) %>%
+    dplyr::mutate(`Time-to-travel` = stringr::str_replace_all(string = `Time-to-travel`, 
+                                                              pattern = " minutes", 
+                                                              replacement = "\nminutes")) %>%
+    dplyr::mutate(Locality = paste(Locality, ", ", State, " State", sep = "")) %>%
+    dplyr::group_by(State, Locality, Category, `Time-to-travel`) %>%
+    dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
+    ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
+    geom_col(fill = unicef_blue, alpha = 0.7) +
+    labs(title = "Time-to-travel (in minutes) by beneficiary type and by locality",
+         x = "") +
+    facet_grid(Category ~ Locality, scales = "free_y") +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 4))
   
   ggplotly(p = z)
 })
 
-plotlyOutput(outputId = "wt_gain_locality")
+plotlyOutput(outputId = "ttt_locality_plot")
 ```
-
 
 About
 ================================================================================
@@ -2728,7 +2806,7 @@ This dashboard has been developed in support of the evaluation of the **Sudan Co
 
 **How to use the dashboard**
 
-This dashboard has four main sections - *Performance*, *Responsiveness*, *Case-finding*, and *Effectiveness* - which can be accessed via the header tabs. The *Performance* section (shown on dashboard startup) presents analysis and visualisation of CMAM performance indicators at national, state and locality level across various time periods. The *Responsiveness* section presents analysis and visualisation of CMAM responsiveness indicators at national, state and locality level across various time periods. The *Case-finding* section shows MUAC-at-admission which is an indicator of how good the case-finding mechanism of the programme is - the closer the MUAC-at-admissions are to the admitting MUAC threshold (i.e. 115 mm) the earlier that they are found in the community and the earlier the cases are found the better their treatment outcomes are. The *Effectiveness* section presents indicators of length-of-stay in the programme and average weight gain. These indicators assess clinical effectiveness. The dashboard has a fixed sidebar that contains various user interfaces for selecting appropriate settings for respective sections. The various settings groups include an info button which when clicked shows a modal dialog box providing information and guidance on how to choose appropriate settings.
+This dashboard has four main sections - *Performance*, *Responsiveness*, *Effectiveness*, *Case-finding*, and *Access* - which can be accessed via the header tabs. The *Performance* section (shown on dashboard startup) presents analysis and visualisation of CMAM performance indicators at national, state and locality level across various time periods. The *Responsiveness* section presents analysis and visualisation of CMAM responsiveness indicators at national, state and locality level across various time periods. The *Effectiveness* section presents indicators of length-of-stay in the programme and average weight gain. These indicators assess clinical effectiveness. The *Case-finding* section shows MUAC-at-admission which is an indicator of how good the case-finding mechanism of the programme is - the closer the MUAC-at-admissions are to the admitting MUAC threshold (i.e. 115 mm) the earlier that they are found in the community and the earlier the cases are found the better their treatment outcomes are. The *Access* section presents time-to-travel analysis of various programme beneficiaries as an indicator of access to services. The dashboard has a fixed sidebar that contains various user interfaces for selecting appropriate settings for respective sections. The various settings groups include an info button which when clicked shows a modal dialog box providing information and guidance on how to choose appropriate settings.
 
 <br>
 
