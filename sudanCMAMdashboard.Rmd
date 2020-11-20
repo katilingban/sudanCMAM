@@ -2493,7 +2493,6 @@ Row {.tabset .tabset-fade}
 ```{r los1}
 length_of_stay <- otp_beneficiaries %>%
   calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
-  mutate(state = "Kassala") %>%
   dplyr::relocate(state, .before = locality)
 
 median_los_state <- length_of_stay %>%
@@ -2526,6 +2525,7 @@ row.names(median_los_locality) <- 1:nrow(median_los_locality)
 ```{r los2, fig.height = 8}
 output$los_state <- renderPlotly({
   los_state_plot <- length_of_stay %>%
+    filter(los >= 0) %>%
     ggplot(mapping = aes(x = state, y = los)) +
     geom_boxplot(colour = unicef_blue, width = 0.5) +
     scale_y_continuous(breaks = seq(from = 0, 
@@ -2547,18 +2547,21 @@ plotlyOutput(outputId = "los_state")
 ```{r los3, fig.height = 8}
 output$los_locality <- renderPlotly({
   los_locality_plot <- length_of_stay %>%
-    ggplot(mapping = aes(x = locality, y = los)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    scale_y_continuous(breaks = seq(from = 0, 
-                                    to = max(length_of_stay$los), 
-                                    by = 10)) +
+    filter(los >= 0) %>%
+    mutate(locality = factor(x = locality, 
+                             levels = unique(length_of_stay$locality))) %>%
+    ggplot(mapping = aes(x = locality, y = los, colour = state, fill = state)) +
+    geom_boxplot(width = 0.5, alpha = 0.5) +
+    scale_colour_manual(name = "State", 
+                        values = c(unicef_orange, unicef_purple)) +
+    scale_fill_manual(values = c(unicef_orange, unicef_purple)) +
     labs(title = "Median length-of-stay by locality",
          x = "",
          y = "Length-of-stay (days)") +
-    facet_wrap(state ~ .) +
     unicef_theme
   
-  ggplotly(p = los_locality_plot)
+  ggplotly(p = los_locality_plot) %>%
+    layout(legend = list(orientation = "h", y = 1.04))
 })
 
 plotlyOutput(outputId = "los_locality")
@@ -2569,7 +2572,6 @@ Row {.tabset .tabset-fade}
 
 ```{r wtGain1}
 wt_gain <- otp_beneficiaries %>%
-  mutate(state = "Kassala") %>%
   dplyr::relocate(state, .before = locality) %>%
   calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
   mutate(wtGain = ((diswt - wt) * 1000) / (wt * los)) %>%
@@ -2602,18 +2604,23 @@ plotlyOutput(outputId = "wt_gain_state")
 ```{r wtGain3, fig.height = 8}
 output$wt_gain_locality <- renderPlotly({
   z <- wt_gain %>%
-    ggplot(mapping = aes(x = locality, y = wtGain)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
+    mutate(locality = factor(x = locality, levels = unique(locality))) %>%
+    ggplot(mapping = aes(x = locality, y = wtGain, colour = state, fill = state)) +
+    geom_boxplot(width = 0.5, alpha = 0.5) +
     scale_y_continuous(breaks = seq(from = 0, 
                                     to = max(wt_gain$wtGain), 
                                     by = 2)) +
+    scale_colour_manual(name = "State",
+                        values = c(unicef_orange, unicef_purple)) +
+    scale_fill_manual(values = c(unicef_orange, unicef_purple)) +
     labs(title = "Average weight gain by locality",
          x = "",
          y = "Average weight gain (g/kg/day)") +
-    facet_wrap(state ~ .) +
+    #facet_wrap(state ~ .) +
     unicef_theme
   
-  ggplotly(p = z)
+  ggplotly(p = z) %>%
+    layout(legend = list(orientation = "h", y = 1.04))
 })
 
 plotlyOutput(outputId = "wt_gain_locality")
@@ -2644,8 +2651,23 @@ x4 <- muac_admission[[4]] %>%
                names_to = "health_facilities", 
                values_to = "n")
 
+x5 <- muac_admission[[5]] %>%
+  pivot_longer(cols = `Alnhdua`:Golo,
+               names_to = "health_facilities",
+               values_to = "n")
+
+x6 <- muac_admission[[6]] %>%
+  pivot_longer(cols = `Rownda A`:`Tawila Hospital`,
+               names_to = "health_facilities",
+               values_to = "n")
+
+x7 <- muac_admission[[7]] %>%
+  pivot_longer(cols = `Kutum Health Centre`:Damrat,
+               names_to = "health_facilities",
+               values_to = "n")
+
 ## Concatenate
-xx <- rbind(x1, x2, x3, x4)
+xx <- rbind(x1, x2, x3, x4, x5, x6, x7)
 ```
 
 Row <!--- {.tabset .tabset-fade} --->
@@ -2653,7 +2675,7 @@ Row <!--- {.tabset .tabset-fade} --->
 
 ### By state
 
-```{r muac2, fig.height = 6}
+```{r muac2, fig.height = 8}
 muac_state <- aggregate(n ~ state + muac, data = xx, FUN = sum)
 
 median_muac <- muac_state %>%
@@ -2677,10 +2699,11 @@ output$state_muac <- renderPlotly({
                linetype = 2, size = 0.5) +
     scale_x_reverse(breaks = seq(from = 115, to = 60, by = -5)) +
     labs(title = "MUAC at Admission by State", x = "MUAC (mm)") +
-    facet_wrap(. ~ state, ncol = 3) +
+    facet_wrap(state ~ ., nrow = 4) +
     unicef_theme
   
-  ggplotly(p = z)
+  ggplotly(p = z) %>%
+    layout(legend = list(orientation = "h", y = 1.075))
 })
 
 plotlyOutput(outputId = "state_muac")
@@ -2689,16 +2712,15 @@ plotlyOutput(outputId = "state_muac")
 Row
 --------------------------------------------------------------------------------
 
-### By locality
+### By locality in Kassala State
 
 ```{r muac3, fig.height = 8}
 muac_locality <- aggregate(n ~ state + locality + muac, data = xx, FUN = sum)
 
 median_muac_locality <- muac_locality %>%
-  split(f = list(muac_locality$state, muac_locality$locality)) %>%
+  split(f = list(muac_locality$state, muac_locality$locality), drop = TRUE) %>%
   lapply(FUN = function(x) median(rep(x$muac, x$n), na.rm = TRUE)) %>%
   unlist()
-
 
 median_muac_locality <- stringr::str_split(string = names(median_muac_locality), 
                                            pattern = "\\.", 
@@ -2706,26 +2728,64 @@ median_muac_locality <- stringr::str_split(string = names(median_muac_locality),
   data.frame(median_muac_locality) %>%
   rename(state = X1, locality = X2, `median muac` = median_muac_locality)
 
-row.names(median_muac_locality) <- 1:nrow(median_muac_locality)
+median_muac_locality_kassala <- median_muac_locality %>%
+  filter(state == "Kassala")
 
-output$locality_muac <- renderPlotly({
+row.names(median_muac_locality_kassala) <- 1:nrow(median_muac_locality_kassala)
+
+output$locality_muac_kassala <- renderPlotly({
   z <- muac_locality %>%
+    filter(state == "Kassala") %>%
     ggplot(mapping = aes(x = muac, y = n)) +
     geom_col(fill = unicef_blue, alpha = 0.7) +
-    geom_vline(data = median_muac_locality,
+    geom_vline(data = median_muac_locality_kassala,
                mapping = aes(xintercept = `median muac`), 
                colour = unicef_darkblue, 
                linetype = 2, size = 0.5) +
     scale_x_reverse(breaks = seq(from = 115, to = 60, by = -5)) +
-    labs(title = "MUAC at Admission by Locality", x = "MUAC (mm)") +
-    facet_grid(locality ~ state) +
+    labs(title = "MUAC at Admission by Locality in Kassala State", x = "MUAC (mm)") +
+    facet_grid(rows = vars(locality), scales = "free_y") +
     unicef_theme
   
-  ggplotly(p = z)
+  ggplotly(p = z) %>%
+    layout(legend = list(orientation = "h", y = 1.02))
 })
 
-plotlyOutput(outputId = "locality_muac")
+plotlyOutput(outputId = "locality_muac_kassala")
 ```
+
+Row
+--------------------------------------------------------------------------------
+
+### By locality in North Darfur State
+
+```{r muac4, fig.height = 8}
+median_muac_locality_northdarfur <- median_muac_locality %>%
+  filter(state == "North Darfur")
+
+row.names(median_muac_locality_northdarfur) <- 1:nrow(median_muac_locality_northdarfur)
+
+output$locality_muac_northdarfur <- renderPlotly({
+  z <- muac_locality %>%
+    filter(state == "North Darfur") %>%
+    ggplot(mapping = aes(x = muac, y = n)) +
+    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_vline(data = median_muac_locality_northdarfur,
+               mapping = aes(xintercept = `median muac`), 
+               colour = unicef_darkblue, 
+               linetype = 2, size = 0.5) +
+    scale_x_reverse(breaks = seq(from = 115, to = 60, by = -5)) +
+    labs(title = "MUAC at Admission by Locality in North Darfur State", x = "MUAC (mm)") +
+    facet_grid(rows = vars(locality), scales = "free_y") +
+    unicef_theme
+  
+  ggplotly(p = z) %>%
+    layout(legend = list(orientation = "h", y = 1.02))
+})
+
+plotlyOutput(outputId = "locality_muac_northdarfur")
+```
+
 
 Access
 ================================================================================
@@ -2765,11 +2825,12 @@ plotlyOutput(outputId = "ttt_state_plot")
 Row
 --------------------------------------------------------------------------------
 
-### By locality
+### By locality in Kassala State
 
-```{r ttt_locality}
-output$ttt_locality_plot <- renderPlotly({
+```{r ttt_locality_kassala}
+output$ttt_locality_kassala_plot <- renderPlotly({
   z <- time_to_travel %>%
+    filter(State == "Kassala") %>%
     tidyr::pivot_longer(cols = `30 or less`:`more than 120`,
                         names_to = "Time-to-travel",
                         values_to = "n") %>%
@@ -2777,23 +2838,58 @@ output$ttt_locality_plot <- renderPlotly({
     dplyr::mutate(`Time-to-travel` = stringr::str_replace_all(string = `Time-to-travel`, 
                                                               pattern = " minutes", 
                                                               replacement = "\nminutes")) %>%
-    dplyr::mutate(Locality = paste(Locality, ", ", State, " State", sep = "")) %>%
     dplyr::group_by(State, Locality, Category, `Time-to-travel`) %>%
     dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
     dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
     ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
     geom_col(fill = unicef_blue, alpha = 0.7) +
-    labs(title = "Time-to-travel (in minutes) by beneficiary type and by locality",
+    labs(title = "Time-to-travel (in minutes) by beneficiary type and locality, Kassala State",
          x = "") +
     facet_grid(Category ~ Locality, scales = "free_y") +
     unicef_theme +
-    theme(axis.text.x = element_text(size = 4))
+    theme(axis.text.x = element_text(size = 4),
+          plot.title = element_text(size = 14))
   
   ggplotly(p = z)
 })
 
-plotlyOutput(outputId = "ttt_locality_plot")
+plotlyOutput(outputId = "ttt_locality_kassala_plot")
 ```
+
+Row
+--------------------------------------------------------------------------------
+
+### By locality in North Darfur State
+
+```{r ttt_locality_northdarfur}
+output$ttt_locality_northdarfur_plot <- renderPlotly({
+  z <- time_to_travel %>%
+    filter(State == "North Darfur") %>%
+    tidyr::pivot_longer(cols = `30 or less`:`more than 120`,
+                        names_to = "Time-to-travel",
+                        values_to = "n") %>%
+    dplyr::mutate(`Time-to-travel` = paste(`Time-to-travel`, "minutes", sep = " ")) %>%
+    dplyr::mutate(`Time-to-travel` = stringr::str_replace_all(string = `Time-to-travel`, 
+                                                              pattern = " minutes", 
+                                                              replacement = "\nminutes")) %>%
+    dplyr::group_by(State, Locality, Category, `Time-to-travel`) %>%
+    dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
+    ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
+    geom_col(fill = unicef_blue, alpha = 0.7) +
+    labs(title = "Time-to-travel (in minutes) by beneficiary type and locality, North Darfur State",
+         x = "") +
+    facet_grid(Category ~ Locality, scales = "free_y") +
+    unicef_theme +
+    theme(axis.text.x = element_text(size = 4),
+          plot.title = element_text(size = 14))
+  
+  ggplotly(p = z)
+})
+
+plotlyOutput(outputId = "ttt_locality_northdarfur_plot")
+```
+
 
 About
 ================================================================================

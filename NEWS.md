@@ -1,3 +1,11 @@
+# Sudan CMAM Dashboard v0.1.6
+
+In this version:
+
+* updated visualisation of time-to-travel metrics
+
+* updated length-of-stay and average weight gain plots
+
 # Sudan CMAM Dashboard v0.1.5
 
 In this version:
