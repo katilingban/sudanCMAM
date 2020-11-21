@@ -133,8 +133,11 @@ legend.format <- function (prefix = "",
 }
 ```
 
-Sidebar {.sidebar}
+Performance
 ================================================================================
+
+Inputs {.sidebar}
+--------------------------------------------------------------------------------
 
 ```{r}
 div(style="display: inline-block;vertical-align:middle;",            
@@ -251,7 +254,6 @@ checkboxInput(inputId = "standards",
               value = FALSE)
 
 hr()
-#br()
 ```
 
 ```{r}
@@ -335,74 +337,7 @@ selectInput(inputId = "map_tiles",
             selected = "map.terminal")
 
 hr()
-#br()
 ```
-
-```{r}
-div(style="display: inline-block;vertical-align:middle;",            
-    h4("Responsiveness settings"))
-
-div(style="display: inline-block;vertical-align:top;",
-    actionLink(inputId = "responsiveness_settings_info",
-               label = "",
-               icon = icon(name = "info-sign", lib = "glyphicon")))
-
-observeEvent(input$responsiveness_settings_info, {
-  showModal(
-    modalDialog(
-      HTML(
-        "<p>These settings are used for the <strong>responsiveness indicators</strong>
-        section of this dashboard.</p>
-        <br>
-        <h4>Smooth line</h4>
-        <p>This checkbox indicates whether the <strong>responsiveness indicators</strong>
-        time series plot should be smoothed using the <strong>median of 3 and 
-        average of 3</strong> approach.</p>
-        <p>On dashboard startup, the checkbox is unchecked and smoothed line 
-        for the time series is not shown on the plots.</p>
-        <br>
-        <h4>Show seasonal calendar</h4>
-        <p>This checkbox indicates whether <strong>seasonal calendar</strong> should 
-        be shown on the plots.</p>
-        <p>On dashboard startup, the checkbox is unchecked and <strong>seasonal calendar</strong>
-        is not shown on the plots.</p>
-        <br>
-        <h4>Scaling for plots</h4>
-        <p>From the drop-down menu, select the type of <strong>y-axis scale</strong> 
-        to use for responsiveness time series plots.</p>
-        <p>Click on the drop-down menu to see the choice between <strong>Free</strong>
-        and <strong>Fixed</strong>. Select <strong>Free</strong> to make
-        <strong>y-axis scale</strong> of mutli-faceted plots indpendent of each other.
-        This is good for examining time series trend for each state or for each
-        locality. Select <strong>Fixed</strong> to make <strong>y-axis scale</strong>
-        of mutli-faceted plots the same for each plot. This is good for comparing
-        the magnitude of values of the time series plots between states or between
-        localities. On dashboard startup, <strong>Free</strong> is selected.</p>
-        "
-      ),
-      title = "Responsiveness settings",
-      footer = modalButton("Close")
-    )
-  )
-})
-
-checkboxInput(inputId = "smooth",
-              label = "Smooth line",
-              value = FALSE)
-
-checkboxInput(inputId = "showCalendar",
-              label = "Show seasonal calendar",
-              value = FALSE)
-
-selectInput(inputId = "scales",
-            label = "Scaling for plots",
-            choices = c("Free" = "free_y",
-                        "Fixed" = "fixed"),
-            selected = "free_y")
-```
-
-Performance
-================================================================================
 
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
@@ -712,7 +647,7 @@ output$performanceYearOverall <- renderPlotly({
     ggplot(mapping = aes(x = Year, y = Performance)) +
     geom_col(mapping = aes(fill = Indicator), 
              width = 0.5,
-             alpha = 0.8) + 
+             alpha = 0.5) + 
     scale_fill_manual(name = "",
                       values = c("Cured" = "#1a9850", 
                                  "Defaulted" = "#d73027",
@@ -761,7 +696,7 @@ output$performanceYearStateOverall <- renderPlotly({
     ggplot(mapping = aes(x = Year, y = Performance)) +
     geom_col(mapping = aes(fill = Indicator), 
              width = 0.5,
-             alpha = 0.8) + 
+             alpha = 0.5) + 
     scale_fill_manual(name = "",
                       values = c("Cured" = "#1a9850", 
                                  "Defaulted" = "#d73027",
@@ -816,7 +751,7 @@ output$performanceYearLocalityOverall <- renderPlotly({
     ggplot(mapping = aes(x = Year, y = Performance)) +
     geom_col(mapping = aes(fill = Indicator), 
              width = 0.5,
-             alpha = 0.8) + 
+             alpha = 0.5) + 
     scale_fill_manual(name = "",
                       values = c("Cured" = "#1a9850", 
                                  "Defaulted" = "#d73027",
@@ -1824,6 +1759,150 @@ leafletOutput(outputId = "localityPerformanceMap")
 Responsiveness
 ================================================================================
 
+Inputs {.sidebar}
+--------------------------------------------------------------------------------
+
+```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("General settings"))
+
+div(style="display: inline-block;vertical-align:top;",
+    actionLink(inputId = "general_settings_info_2",
+               label = "",
+               icon = icon(name = "info-sign", lib = "glyphicon")))
+
+observeEvent(input$general_settings_info_2, {
+  showModal(
+    modalDialog(
+      HTML(
+        "<p>These settings are used across the both sections (<strong>performance</strong> 
+        and <strong>responsiveness</strong>) of this dashboard.</p>
+        <br>
+        <h4>Select state</h4>
+        <p>From the drop-down menu, select the state for which state-specific analysis
+        and/or visualisations are to be shown such as <strong>performance over 
+        time from 2016-2019</strong>, <strong>admissions over time from 2016-2019</strong>
+        and <strong>defaulters over time from 2016-2019</strong>.</p>
+        <p>Selected state will also determine which localities are provided as
+        options in the <em>Select locality</em> settings and which localities
+        are presented in the locality level <strong>performance over time for a 
+        specific year</strong>, <strong>admissions over time for a specific
+        year</strong>, <strong>defaulters over time for a specific year</strong>
+        and <strong>choropleth map of performance for a specific month and year</strong>.</p>
+        <p>Click on drop-down menu to see list of states and select state. Gazera
+        state is selected on dashboard startup.</p>
+        <br>
+        <h4>Select locality</h4>
+        <p>From the drop-down menu, select the locality for which locality-specific
+        analysis and/or visualisations are to be shown such as <strong>performance
+        over time from 2016-2019</strong>, <strong>admissions over time from
+        2016-2019</strong> and <strong>defaulters over time from 2016-2019</strong>.</p>
+        <p>The list of localities to choose from the drop-down menu depends on
+        the selected state. No locality is selected on dashboard startup.</p>
+        <br>
+        <h4>Select year</h4>
+        <p>From the drop-down menu, select the year for which year-specific analysis
+        and/or visualisations are to be shown such as <strong>performance over
+        time at national, state and locality level</strong>, <strong>admissions
+        over time at national, state and locality level</strong>,
+        <strong>defaulters over time at national, state and locality level</strong>,
+        and <strong>choropleth map of performance by selected month and year</strong>.
+        <p>Click on the drop-down menu to see the choices of years from 2016 to
+        2019. On dashboard startup, year 2016 is selected.</p>
+        "
+      ),
+      title = "General settings",
+      footer = modalButton("Close")
+    )
+  )
+})
+
+selectInput(inputId = "state_name_2",
+            label = "Select state",
+            choices = unique(monitoring$State),
+            selected = NULL)
+
+output$select_locality_2 <- renderUI({
+  req(input$state_name_2)
+  selectInput(inputId = "locality_name_2",
+              label = "Select locality",
+              choices = unique(monitoring$Locality[monitoring$State == input$state_name_2]),
+              selected = NULL)
+})
+
+uiOutput("select_locality_2")
+
+selectInput(inputId = "chosen_year_2",
+            label = "Select year",
+            choices = unique(monitoring$Year),
+            selected = NULL)
+
+hr()
+```
+
+```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("Responsiveness settings"))
+
+div(style="display: inline-block;vertical-align:top;",
+    actionLink(inputId = "responsiveness_settings_info",
+               label = "",
+               icon = icon(name = "info-sign", lib = "glyphicon")))
+
+observeEvent(input$responsiveness_settings_info, {
+  showModal(
+    modalDialog(
+      HTML(
+        "<p>These settings are used for the <strong>responsiveness indicators</strong>
+        section of this dashboard.</p>
+        <br>
+        <h4>Smooth line</h4>
+        <p>This checkbox indicates whether the <strong>responsiveness indicators</strong>
+        time series plot should be smoothed using the <strong>median of 3 and 
+        average of 3</strong> approach.</p>
+        <p>On dashboard startup, the checkbox is unchecked and smoothed line 
+        for the time series is not shown on the plots.</p>
+        <br>
+        <h4>Show seasonal calendar</h4>
+        <p>This checkbox indicates whether <strong>seasonal calendar</strong> should 
+        be shown on the plots.</p>
+        <p>On dashboard startup, the checkbox is unchecked and <strong>seasonal calendar</strong>
+        is not shown on the plots.</p>
+        <br>
+        <h4>Scaling for plots</h4>
+        <p>From the drop-down menu, select the type of <strong>y-axis scale</strong> 
+        to use for responsiveness time series plots.</p>
+        <p>Click on the drop-down menu to see the choice between <strong>Free</strong>
+        and <strong>Fixed</strong>. Select <strong>Free</strong> to make
+        <strong>y-axis scale</strong> of mutli-faceted plots indpendent of each other.
+        This is good for examining time series trend for each state or for each
+        locality. Select <strong>Fixed</strong> to make <strong>y-axis scale</strong>
+        of mutli-faceted plots the same for each plot. This is good for comparing
+        the magnitude of values of the time series plots between states or between
+        localities. On dashboard startup, <strong>Free</strong> is selected.</p>
+        "
+      ),
+      title = "Responsiveness settings",
+      footer = modalButton("Close")
+    )
+  )
+})
+
+checkboxInput(inputId = "smooth",
+              label = "Smooth line",
+              value = FALSE)
+
+checkboxInput(inputId = "showCalendar",
+              label = "Show seasonal calendar",
+              value = FALSE)
+
+selectInput(inputId = "scales",
+            label = "Scaling for plots",
+            choices = c("Free" = "free_y",
+                        "Fixed" = "fixed"),
+            selected = "free_y")
+```
+
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
@@ -2487,6 +2566,14 @@ plotlyOutput(outputId = "locality_defaulters")
 Effectiveness
 ================================================================================
 
+Inputs {.sidebar}
+--------------------------------------------------------------------------------
+
+```{r}
+div(style="display: inline-block;vertical-align:middle;",            
+    h4("Effectiveness settings"))
+```
+
 Row {.tabset .tabset-fade}
 --------------------------------------------------------------------------------
 
@@ -2522,21 +2609,21 @@ row.names(median_los_locality) <- 1:nrow(median_los_locality)
 
 ### By state
 
-```{r los2, fig.height = 8}
+```{r los2, fig.height = 5}
 output$los_state <- renderPlotly({
   los_state_plot <- length_of_stay %>%
     filter(los >= 0) %>%
     ggplot(mapping = aes(x = state, y = los)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    scale_y_continuous(breaks = seq(from = 0, 
-                                    to = max(length_of_stay$los), 
-                                    by = 10)) +
+    geom_boxplot(width = 0.3, colour = unicef_blue) +
+    scale_y_continuous(n.breaks = 10) +
     labs(title = "Median length-of-stay by state",
          x = "",
          y = "Length-of-stay (days)") +
     unicef_theme
   
-  ggplotly(p = los_state_plot)
+  xx <- ggplotly(p = los_state_plot)
+  xx$x$data[[1]]$marker$outliercolor <- unicef_blue
+  xx
 })
 
 plotlyOutput(outputId = "los_state")
@@ -2544,24 +2631,25 @@ plotlyOutput(outputId = "los_state")
 
 ### By locality
 
-```{r los3, fig.height = 8}
+```{r los3, fig.height = 5}
 output$los_locality <- renderPlotly({
   los_locality_plot <- length_of_stay %>%
     filter(los >= 0) %>%
     mutate(locality = factor(x = locality, 
                              levels = unique(length_of_stay$locality))) %>%
     ggplot(mapping = aes(x = locality, y = los, colour = state, fill = state)) +
-    geom_boxplot(width = 0.5, alpha = 0.5) +
+    geom_boxplot(width = 0.3, alpha = 0.5) +
     scale_colour_manual(name = "State", 
                         values = c(unicef_orange, unicef_purple)) +
     scale_fill_manual(values = c(unicef_orange, unicef_purple)) +
+    scale_y_continuous(n.breaks = 10) +
     labs(title = "Median length-of-stay by locality",
          x = "",
          y = "Length-of-stay (days)") +
     unicef_theme
   
   ggplotly(p = los_locality_plot) %>%
-    layout(legend = list(orientation = "h", y = 1.04))
+    layout(legend = list(orientation = "h", y = 1.07))
 })
 
 plotlyOutput(outputId = "los_locality")
@@ -2580,20 +2668,20 @@ wt_gain <- otp_beneficiaries %>%
 
 ### By state
 
-```{r wtGain2, fig.height = 8}
+```{r wtGain2, fig.height = 5}
 output$wt_gain_state <- renderPlotly({
   z <- wt_gain %>%
     ggplot(mapping = aes(x = state, y = wtGain)) +
-    geom_boxplot(colour = unicef_blue, width = 0.5) +
-    scale_y_continuous(breaks = seq(from = 0, 
-                                    to = max(wt_gain$wtGain), 
-                                    by = 2)) +
+    geom_boxplot(colour = unicef_blue, width = 0.3) +
+    scale_y_continuous(n.breaks = 10) +
     labs(title = "Average weight gain by state",
          x = "",
          y = "Average weight gain (g/kg/day)") +
     unicef_theme
   
-  ggplotly(p = z)
+  xx <- ggplotly(p = z)
+  xx$x$data[[1]]$marker$outliercolor <- unicef_blue
+  xx
 })
 
 plotlyOutput(outputId = "wt_gain_state")
@@ -2601,26 +2689,23 @@ plotlyOutput(outputId = "wt_gain_state")
 
 ### By locality
 
-```{r wtGain3, fig.height = 8}
+```{r wtGain3, fig.height = 5}
 output$wt_gain_locality <- renderPlotly({
   z <- wt_gain %>%
     mutate(locality = factor(x = locality, levels = unique(locality))) %>%
     ggplot(mapping = aes(x = locality, y = wtGain, colour = state, fill = state)) +
-    geom_boxplot(width = 0.5, alpha = 0.5) +
-    scale_y_continuous(breaks = seq(from = 0, 
-                                    to = max(wt_gain$wtGain), 
-                                    by = 2)) +
+    geom_boxplot(width = 0.3, alpha = 0.5) +
+    scale_y_continuous(n.breaks = 10) +
     scale_colour_manual(name = "State",
                         values = c(unicef_orange, unicef_purple)) +
     scale_fill_manual(values = c(unicef_orange, unicef_purple)) +
     labs(title = "Average weight gain by locality",
          x = "",
          y = "Average weight gain (g/kg/day)") +
-    #facet_wrap(state ~ .) +
     unicef_theme
   
   ggplotly(p = z) %>%
-    layout(legend = list(orientation = "h", y = 1.04))
+    layout(legend = list(orientation = "h", y = 1.07))
 })
 
 plotlyOutput(outputId = "wt_gain_locality")
@@ -2692,7 +2777,7 @@ row.names(median_muac) <- 1:nrow(median_muac)
 output$state_muac <- renderPlotly({
   z <- muac_state %>%
     ggplot(mapping = aes(x = muac, y = n)) +
-    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_col(fill = unicef_blue, alpha = 0.5) +
     geom_vline(data = median_muac,
                mapping = aes(xintercept = `median muac`), 
                colour = unicef_darkblue, 
@@ -2737,7 +2822,7 @@ output$locality_muac_kassala <- renderPlotly({
   z <- muac_locality %>%
     filter(state == "Kassala") %>%
     ggplot(mapping = aes(x = muac, y = n)) +
-    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_col(fill = unicef_blue, alpha = 0.5) +
     geom_vline(data = median_muac_locality_kassala,
                mapping = aes(xintercept = `median muac`), 
                colour = unicef_darkblue, 
@@ -2769,7 +2854,7 @@ output$locality_muac_northdarfur <- renderPlotly({
   z <- muac_locality %>%
     filter(state == "North Darfur") %>%
     ggplot(mapping = aes(x = muac, y = n)) +
-    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_col(fill = unicef_blue, alpha = 0.5) +
     geom_vline(data = median_muac_locality_northdarfur,
                mapping = aes(xintercept = `median muac`), 
                colour = unicef_darkblue, 
@@ -2809,7 +2894,7 @@ output$ttt_state_plot <- renderPlotly({
     dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
     dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
     ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
-    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_col(fill = unicef_blue, alpha = 0.5) +
     labs(title = "Time-to-travel (in minutes) by beneficiary type and by state",
          x = "") +
     facet_grid(rows = vars(Category), cols = vars(State), scales = "free_y") +
@@ -2842,7 +2927,7 @@ output$ttt_locality_kassala_plot <- renderPlotly({
     dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
     dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
     ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
-    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_col(fill = unicef_blue, alpha = 0.5) +
     labs(title = "Time-to-travel (in minutes) by beneficiary type and locality, Kassala State",
          x = "") +
     facet_grid(Category ~ Locality, scales = "free_y") +
@@ -2876,7 +2961,7 @@ output$ttt_locality_northdarfur_plot <- renderPlotly({
     dplyr::summarise(sum(n, na.rm = TRUE), .groups = "drop") %>%
     dplyr::rename(n = `sum(n, na.rm = TRUE)`) %>%
     ggplot(mapping = aes(x = `Time-to-travel`, y = n)) +
-    geom_col(fill = unicef_blue, alpha = 0.7) +
+    geom_col(fill = unicef_blue, alpha = 0.5) +
     labs(title = "Time-to-travel (in minutes) by beneficiary type and locality, North Darfur State",
          x = "") +
     facet_grid(Category ~ Locality, scales = "free_y") +
