@@ -1,3 +1,15 @@
+# Sudan CMAM Dashboard v0.1.7
+
+In this version:
+
+* created different sidebars per dashboard section
+
+* used faceting for plots of length-of-stay, median MUAC-at-admission and
+time-to-travel
+
+* corrected plotting of yearly performance indicators over time - issue with
+group aesthetic causing wrong data to be plotted for grouping of interest
+
 # Sudan CMAM Dashboard v0.1.6
 
 In this version:
