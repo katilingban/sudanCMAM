@@ -1,3 +1,9 @@
+# Sudan CMAM Dashboard v0.1.9
+
+In this version:
+
+* updated dataset for Algazira (partial)
+
 # Sudan CMAM Dashboard v0.1.8
 
 In this version:
