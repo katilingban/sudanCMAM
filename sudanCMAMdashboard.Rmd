@@ -2607,6 +2607,7 @@ Row {.tabset .tabset-fade}
 
 ```{r los1}
 length_of_stay <- otp_beneficiaries %>%
+  dplyr::filter(!is.na(admDate), !is.na(disDate)) %>%
   calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
   dplyr::relocate(state, .before = locality)
 
@@ -2701,7 +2702,8 @@ output$los_locality <- renderPlotly({
       labs(title = "Median length-of-stay by locality",
            x = "",
            y = "Length-of-stay (days)") +
-      unicef_theme
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 30))
   
     xx <- ggplotly(p = los_locality_plot)
   
@@ -2719,14 +2721,17 @@ output$los_locality <- renderPlotly({
       labs(title = "Median length-of-stay by locality",
            x = "",
            y = "Length-of-stay (days)") +
-      unicef_theme
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 30))
   
     xx <- ggplotly(p = los_locality_plot)
   
     xx$x$data[[1]]$marker$outliercolor <- unicef_blue
     xx$x$data[[1]]$marker$line$color <- unicef_blue
     xx$x$data[[2]]$marker$outliercolor <- unicef_blue
-    xx$x$data[[2]]$marker$line$color <- unicef_blue    
+    xx$x$data[[2]]$marker$line$color <- unicef_blue
+    xx$x$data[[3]]$marker$outliercolor <- unicef_blue
+    xx$x$data[[3]]$marker$line$color <- unicef_blue
   }
 
   ## Return plot
@@ -2741,6 +2746,7 @@ Row {.tabset .tabset-fade}
 
 ```{r wtGain1}
 wt_gain <- otp_beneficiaries %>%
+  dplyr::filter(!is.na(admDate), !is.na(disDate)) %>%
   dplyr::relocate(state, .before = locality) %>%
   calculate_los_df(admission_date = "admDate", discharge_date = "disDate") %>%
   mutate(wtGain = ((diswt - wt) * 1000) / (wt * los)) %>%
@@ -2809,7 +2815,8 @@ output$wt_gain_locality <- renderPlotly({
       labs(title = "Average weight gain by locality",
            x = "",
            y = "Average weight gain (g/kg/day)") +
-      unicef_theme
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 30))
   
     xx <- ggplotly(p = z)
   
@@ -2825,14 +2832,17 @@ output$wt_gain_locality <- renderPlotly({
       labs(title = "Average weight gain by locality",
            x = "",
            y = "Average weight gain (g/kg/day)") +
-      unicef_theme
+      unicef_theme +
+      theme(axis.text.x = element_text(size = 8, angle = 30))
   
     xx <- ggplotly(p = z)
   
     xx$x$data[[1]]$marker$outliercolor <- unicef_blue
     xx$x$data[[1]]$marker$line$color <- unicef_blue
     xx$x$data[[2]]$marker$outliercolor <- unicef_blue
-    xx$x$data[[2]]$marker$line$color <- unicef_blue    
+    xx$x$data[[2]]$marker$line$color <- unicef_blue 
+    xx$x$data[[3]]$marker$outliercolor <- unicef_blue
+    xx$x$data[[3]]$marker$line$color <- unicef_blue
   }
 
   ## Return plot
@@ -2887,9 +2897,28 @@ x8 <- muac_admission[[8]] %>%
                names_to = "health_facilities",
                values_to = "n")
 
+x9 <- muac_admission[[9]] %>%
+  pivot_longer(cols = `Abu Sunun`:Banaat,
+               names_to = "health_facilities",
+               values_to = "n")
+
+x10 <- muac_admission[[10]] %>%
+  pivot_longer(cols = `Wad Alhadad`:Barakat,
+               names_to = "health_facilities",
+               values_to = "n")
+
+x11 <- muac_admission[[11]] %>%
+  pivot_longer(cols = Rufaa:Tambool,
+               names_to = "health_facilities",
+               values_to = "n")
+
+x12 <- muac_admission[[12]] %>%
+  pivot_longer(cols = Alsiraiha:Mealig,
+               names_to = "health_facilities",
+               values_to = "n")
 
 ## Concatenate
-xxx <- rbind(x1, x2, x3, x4, x5, x6, x7, x8)
+xxx <- rbind(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)
 ```
 
 Inputs {.sidebar}
