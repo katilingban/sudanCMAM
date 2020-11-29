@@ -2913,7 +2913,7 @@ x11 <- muac_admission[[11]] %>%
                values_to = "n")
 
 x12 <- muac_admission[[12]] %>%
-  pivot_longer(cols = Alsiraiha:Mealig,
+  pivot_longer(cols = Alsiraiha:Giad,
                names_to = "health_facilities",
                values_to = "n")
 
