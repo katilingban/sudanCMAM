@@ -2946,7 +2946,7 @@ Row
 ### Number of lives saved - Aljazira
 
 ```{r}
-lsAljazira <- round(0.1975 * 850, digits = 2)
+lsAljazira <- round(0.0745 * 850, digits = 2)
 
 renderValueBox({
   valueBox(
@@ -2961,7 +2961,7 @@ renderValueBox({
 ### Number of lives saved - Kassala
 
 ```{r}
-lsKassala <- round(0.1975 * 12035, digits = 2)
+lsKassala <- round(0.0745 * 12035, digits = 2)
 
 renderValueBox({
   valueBox(
@@ -2976,7 +2976,7 @@ renderValueBox({
 ### Number of lives saved - North Darfur
 
 ```{r}
-lsNorthDarfur <- round(0.1975 * 30322, digits = 2)
+lsNorthDarfur <- round(0.0745 * 30322, digits = 2)
 
 renderValueBox({
   valueBox(
@@ -2994,7 +2994,7 @@ Row
 ### Years of life lost (YLL) averted - Aljazira
 
 ```{r}
-yllAljazira <- 65 - 1.5
+yllAljazira <- 65 - 1.33
 yllAljazira <- round(lsAljazira * yllAljazira, digits = 2)
 
 renderValueBox({
@@ -3010,7 +3010,7 @@ renderValueBox({
 ### Years of life lost (YLL) averted - Kassala
 
 ```{r}
-yllKassala <- 65 - 1.5
+yllKassala <- 65 - 1.08
 yllKassala <- round(lsKassala * yllKassala, digits = 2)
 
 renderValueBox({
@@ -3026,7 +3026,7 @@ renderValueBox({
 ### Years of life lost (YLL) averted - North Darfur
 
 ```{r}
-yllNorthDarfur <- 65 - 1.5
+yllNorthDarfur <- 65 - 1.17
 yllNorthDarfur <- round(lsNorthDarfur * yllNorthDarfur, digits = 2)
 
 renderValueBox({
