@@ -1938,15 +1938,20 @@ output$overall_admissions <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 2000, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Food availability"),
+                data = season_long() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 2500, ymax = 4500, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Planting"),
+                data = season_long() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 5000, ymax = 7000, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 7500, ymax = 9500, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Rainfall"),
                 alpha = 0.25)
@@ -2003,15 +2008,20 @@ output$overall_state_admissions <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 100, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Food availability"),
+                data = season_long() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 150, ymax = 250, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Planting"),
+                data = season_long() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 300, ymax = 400, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 450, ymax = 550, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Rainfall"),
                 alpha = 0.25)
@@ -2068,15 +2078,20 @@ output$overall_locality_admissions <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 7.5, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Food availability"),
+                data = season_long() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 10, ymax = 17.5, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Planting"),
+                data = season_long() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 20, ymax = 27.5, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 30, ymax = 37.5, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Rainfall"),
                 alpha = 0.25)
@@ -2126,15 +2141,20 @@ output$overall_defaulters <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 175, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Food availability"),
+                data = season_long() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 225, ymax = 400, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Planting"),
+                data = season_long() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 450, ymax = 625, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 675, ymax = 800, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Rainfall"),
                 alpha = 0.25)
@@ -2181,15 +2201,20 @@ output$overall_state_defaulters <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 20, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Food availability"),
+                data = season_long() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 25, ymax = 45, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Planting"),
+                data = season_long() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 50, ymax = 70, fill = group,
+                              text = event),
+                data = season_long() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 75, ymax = 95, fill = group,
                               text = event),
                 data = season_long() %>% filter(group == "Rainfall"),
                 alpha = 0.25)
@@ -2235,18 +2260,23 @@ output$overall_locality_defaulters <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 5, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Food availability"),
+                data = season_long() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 7.5, ymax = 12.5, fill = group,
                               text = event),
-                data = season_long() %>% filter(group == "Planting"),
+                data = season_long() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 15, ymax = 20, fill = group,
                               text = event),
+                data = season_long() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 22.5, ymax = 27.5, fill = group,
+                              text = event),
                 data = season_long() %>% filter(group == "Rainfall"),
-                alpha = 0.25)
+                alpha = 0.25)    
   }  
   
   z <- z + 
@@ -2312,18 +2342,23 @@ output$admissions <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 2500, fill = group,
                               text = event),
-                data = season_year() %>% filter(group == "Food availability"),
+                data = season_year() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 3500, ymax = 6000, fill = group,
                               text = event),
-                data = season_year() %>% filter(group == "Planting"),
+                data = season_year() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 7000, ymax = 9500, fill = group,
                               text = event),
+                data = season_year() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 10500, ymax = 12500, fill = group,
+                              text = event),
                 data = season_year() %>% filter(group == "Rainfall"),
-                alpha = 0.25)
+                alpha = 0.25)      
   }  
     
   z <- z +
@@ -2459,15 +2494,20 @@ output$defaulters <- renderPlotly({
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 0, ymax = 250, fill = group,
                               text = event),
-                data = season_year() %>% filter(group == "Food availability"),
+                data = season_year() %>% filter(group == "Lean season"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 350, ymax = 600, fill = group,
                               text = event),
-                data = season_year() %>% filter(group == "Planting"),
+                data = season_year() %>% filter(group == "Harvest"),
                 alpha = 0.25) +
       geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
                               ymin = 700, ymax = 950, fill = group,
+                              text = event),
+                data = season_year() %>% filter(group == "Planting"),
+                alpha = 0.25) +
+      geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                              ymin = 1050, ymax = 1250, fill = group,
                               text = event),
                 data = season_year() %>% filter(group == "Rainfall"),
                 alpha = 0.25)
@@ -2850,6 +2890,201 @@ output$wt_gain_locality <- renderPlotly({
 })
 
 plotlyOutput(outputId = "wt_gain_locality")
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Years living with disability (YLD) averted - Aljazira
+
+```{r}
+yldAljazira <- round((((182.5 - median_los_state[1, 2]) / 365) * 0.127) * 850, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(yldAljazira),
+    caption = "Years living with disability (YLD) averted - Aljazira 2020",
+    icon = "fa-heartbeat",
+    color = "success"
+  )
+})
+```
+
+### Years living with disability (YLD) averted - Kassala
+
+```{r}
+yldKassala <- round((((182.5 - median_los_state[2, 2]) / 365) * 0.127) * 12035, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(yldKassala),
+    caption = "Years living with disability (YLD) averted - Kassala 2020",
+    icon = "fa-heartbeat",
+    color = "success"
+  )
+})
+```
+
+### Years living with disability (YLD) averted - Nort Darfur
+
+```{r}
+yldNorthDarfur <- round((((182.5 - median_los_state[3, 2]) / 365) * 0.127) * 30322, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(yldNorthDarfur),
+    caption = "Years living with disability (YLD) averted - North Darfur 2020",
+    icon = "fa-heartbeat",
+    color = "success"
+  )
+})
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Number of lives saved - Aljazira
+
+```{r}
+lsAljazira <- round(0.1975 * 850, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(lsAljazira),
+    caption = "Number of lives saved - Aljazira 2020",
+    icon = "fa-child",
+    color = "warning"
+  )
+})
+```
+
+### Number of lives saved - Kassala
+
+```{r}
+lsKassala <- round(0.1975 * 12035, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(lsKassala),
+    caption = "Number of lives saved - Kassala 2020",
+    icon = "fa-child",
+    color = "warning"
+  )
+})
+```
+
+### Number of lives saved - North Darfur
+
+```{r}
+lsNorthDarfur <- round(0.1975 * 30322, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(lsNorthDarfur),
+    caption = "Number of lives saved - North Darfur 2020",
+    icon = "fa-child",
+    color = "warning"
+  )
+})
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Years of life lost (YLL) averted - Aljazira
+
+```{r}
+yllAljazira <- 65 - 1.5
+yllAljazira <- round(lsAljazira * yllAljazira, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(yllAljazira),
+    caption = "Years of life lost (YLL) averted - Aljazira 2020",
+    icon = "fa-gratipay",
+    color = "primary"
+  )
+})
+```
+
+### Years of life lost (YLL) averted - Kassala
+
+```{r}
+yllKassala <- 65 - 1.5
+yllKassala <- round(lsKassala * yllKassala, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(yllKassala),
+    caption = "Years of life lost (YLL) averted - Kassala 2020",
+    icon = "fa-gratipay",
+    color = "primary"
+  )
+})
+```
+
+### Years of life lost (YLL) averted - North Darfur
+
+```{r}
+yllNorthDarfur <- 65 - 1.5
+yllNorthDarfur <- round(lsNorthDarfur * yllNorthDarfur, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(yllNorthDarfur),
+    caption = "Years of life lost (YLL) averted - NorthDarfur 2020",
+    icon = "fa-gratipay",
+    color = "primary"
+  )
+})
+```
+
+Row
+--------------------------------------------------------------------------------
+
+### Disability-adjusted life years (DALY) - Aljazira
+
+```{r}
+dalyAljazira <- round(yldAljazira + yllAljazira, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(dalyAljazira),
+    caption = "Disability adjusted life years (DALY) averted - Aljazira 2020",
+    icon = "fa-procedures",
+    color = "danger"
+  )
+})
+```
+
+### Disability-adjusted life years (DALY) - Kassala
+
+```{r}
+dalyKassala <- round(yldKassala + yllKassala, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(dalyKassala),
+    caption = "Disability adjusted life years (DALY) averted - Kassala 2020",
+    icon = "fa-procedures",
+    color = "danger"
+  )
+})
+```
+
+### Disability-adjusted life years (DALY) - Noth Darfur
+
+```{r}
+dalyNorthDarfur <- round(yldNorthDarfur + yllNorthDarfur, digits = 2)
+
+renderValueBox({
+  valueBox(
+    value = floor(dalyNorthDarfur),
+    caption = "Disability adjusted life years (DALY) averted - North Darfur 2020",
+    icon = "fa-procedures",
+    color = "danger"
+  )
+})
 ```
 
 Case-finding
