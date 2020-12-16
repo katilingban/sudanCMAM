@@ -1,3 +1,9 @@
+# Sudan CMAM Dashboard v0.1.12
+
+In this version:
+
+* re-calculated effectiveness metrics
+
 # Sudan CMAM Dashboard v0.1.11
 
 In this version:
