@@ -1,3 +1,11 @@
+# Sudan CMAM Dashboard v0.1.11
+
+In this version:
+
+* delineated two harvest seasons in the seasonal calendar
+
+* calculated effectiveness metrics
+
 # Sudan CMAM Dashboard v0.1.10
 
 In this version:
