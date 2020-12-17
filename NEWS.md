@@ -1,3 +1,9 @@
+# Sudan CMAM Dashboard v0.1.13
+
+In this version:
+
+* added R script for creating plots
+
 # Sudan CMAM Dashboard v0.1.12
 
 In this version:
