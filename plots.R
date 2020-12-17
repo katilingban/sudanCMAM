@@ -4,6 +4,7 @@ if(!require(magrittr)) install.packages("magrittr")
 if(!require(dplyr)) install.packages("dplyr")
 if(!require(tidyr)) install.packages("tidyr")
 if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(lubridate)) install.packages("lubridate")
 
 remotes::install_github("rapidsurveys/squeacr")
 
@@ -11,6 +12,7 @@ library(magrittr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(lubridate)
 library(squeacr)
 
 ## Load UNICEF palette
@@ -32,8 +34,8 @@ unicef_theme <- theme_bw() +
   theme(plot.title = element_text(size = 16, colour = unicef_darkblue),
         plot.subtitle = element_text(size = 14, colour = unicef_blue),
         panel.border = element_blank(),
-        panel.grid.major.y = element_line(linetype = 1, size = 0.3),
-        panel.grid.minor.y = element_line(linetype = 2, size = 0.15),
+        panel.grid.major.y = element_line(linetype = 1, size = 0.2),
+        panel.grid.minor.y = element_line(linetype = 2, size = 0.1),
         panel.grid.major.x = element_line(linetype = 0),
         panel.grid.minor.x = element_line(linetype = 0),
         strip.background = element_rect(colour = unicef_darkblue,
@@ -61,23 +63,95 @@ x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year,
   mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
                              format = "%Y-%b-%d")) %>%
   arrange(MonthYear) %>%
+  group_by(State) %>%
   mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
-         `Defaulters (smoothed)` = smooth_m3a3(x = Default)) %>%
-  pivot_longer(cols = c(`New Admissions`:Default, 
-                        `Admissions (smoothed)`:`Defaulters (smoothed)`),
-               names_to = "indicator",
-               values_to = "value")
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
   
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
   x %>%
-    ggplot(aes(x = MonthYear, y = indicator)) +
-    geom_line(mapping = aes(x = MonthYear, y = `New Admissions`, group = 1), 
-              colour = "blue", linetype = 1, size = 2)
-    scale_y_continuous(limits = c(0, max(x[["New Admissions"]]))) +
+    ggplot() +
+    geom_line(mapping = aes(x = MonthYear, 
+                            y = `New Admissions`,
+                            colour = "Admissions"), size = 1) +
+    geom_line(mapping = aes(x = MonthYear, 
+                            y = `Admissions (smoothed)`,
+                            colour = "Admissions (smoothed)"),  
+              alpha = 0.5, size = 0.5) +
+    scale_colour_manual(name = "", 
+                        values = c("Admissions" = "blue", 
+                                   "Admissions (smoothed)" = "gray50")) +
     scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
                  sec.axis = sec_axis(~ ., breaks = NULL)) +
-    labs(title = paste("Admissions over time - 2016 to 2019 - ", 
-                       "Al Gazera", " State", sep = ""), 
-         x = "") +
-    unicef_theme
+    labs(title = "Admissions over time from 2016 to 2019", 
+         x = "", y = "Admissions") +
+    facet_wrap(. ~ State, nrow = 3) +
+    geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                            ymin = 0, ymax = 200, fill = group),
+              data = season %>% filter(group == "Lean season"),
+              alpha = 0.25) +
+    geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                            ymin = 250, ymax = 450, fill = group),
+              data = season %>% filter(group == "Harvest"),
+              alpha = 0.25) +
+    geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                            ymin = 500, ymax = 700, fill = group),
+              data = season %>% filter(group == "Planting"),
+              alpha = 0.25) +
+    geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                            ymin = 750, ymax = 950, fill = group),
+              data = season %>% filter(group == "Rainfall"),
+              alpha = 0.25) +
+    unicef_theme +
+    theme(legend.title = element_blank(),
+          axis.text.x = element_text(size = 6),
+          axis.text.y = element_text(size = 8)) 
+
+ggsave(filename = "admissionsOverTime.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
 
 
+## Plot admissions over time by state with seasonal calendar
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = Default,
+                          colour = "Defaulters"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Defaulters (smoothed)`,
+                          colour = "Defaulters (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Defaulters" = "red", 
+                                 "Defaulters (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Defaulters over time from 2016 to 2019", 
+       x = "", y = "Defaulters") +
+  facet_wrap(. ~ State, nrow = 3) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 50, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 55, ymax = 105, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 110, ymax = 160, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 165, ymax = 215, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 8)) 
+
+ggsave(filename = "defaultersOverTime.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
