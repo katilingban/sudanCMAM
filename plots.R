@@ -115,6 +115,177 @@ ggsave(filename = "admissionsOverTime.png", device = "png", path = "figures",
 
 ## Plot admissions over time by state with seasonal calendar
 
+x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>%
+  filter(State == "Gazera") %>%
+  mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
+                             format = "%Y-%b-%d")) %>%
+  arrange(MonthYear) %>%
+  group_by(State) %>%
+  mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `New Admissions`,
+                          colour = "Admissions"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Admissions (smoothed)`,
+                          colour = "Admissions (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Admissions" = "blue", 
+                                 "Admissions (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Admissions over time from 2016 to 2019 - Gazera State", 
+       x = "", y = "Admissions") +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 100, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 150, ymax = 250, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 300, ymax = 400, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 450, ymax = 550, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) 
+
+ggsave(filename = "admissionsOverTimeGazera.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
+
+
+## Plot admissions over time by state with seasonal calendar
+
+x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>%
+  filter(State == "Kassala") %>%
+  mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
+                             format = "%Y-%b-%d")) %>%
+  arrange(MonthYear) %>%
+  group_by(State) %>%
+  mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `New Admissions`,
+                          colour = "Admissions"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Admissions (smoothed)`,
+                          colour = "Admissions (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Admissions" = "blue", 
+                                 "Admissions (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Admissions over time from 2016 to 2019 - Kassala State", 
+       x = "", y = "Admissions") +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 100, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 150, ymax = 250, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 300, ymax = 400, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 450, ymax = 550, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) 
+
+ggsave(filename = "admissionsOverTimeKassala.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
+
+
+## Plot admissions over time by state with seasonal calendar
+
+x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>%
+  filter(State == "North Darfur") %>%
+  mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
+                             format = "%Y-%b-%d")) %>%
+  arrange(MonthYear) %>%
+  group_by(State) %>%
+  mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `New Admissions`,
+                          colour = "Admissions"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Admissions (smoothed)`,
+                          colour = "Admissions (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Admissions" = "blue", 
+                                 "Admissions (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Admissions over time from 2016 to 2019 - North Darfur State", 
+       x = "", y = "Admissions") +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 300, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 400, ymax = 700, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 800, ymax = 1100, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 1200, ymax = 1500, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) 
+
+ggsave(filename = "admissionsOverTimeNorthDarfur.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
+
+
+## Plot admissions over time by state with seasonal calendar
+
 x %>%
   ggplot() +
   geom_line(mapping = aes(x = MonthYear, 
@@ -154,4 +325,175 @@ x %>%
         axis.text.y = element_text(size = 8)) 
 
 ggsave(filename = "defaultersOverTime.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
+
+
+## Plot admissions over time by state with seasonal calendar
+
+x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>%
+  filter(State == "Gazera") %>%
+  mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
+                             format = "%Y-%b-%d")) %>%
+  arrange(MonthYear) %>%
+  group_by(State) %>%
+  mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = Default,
+                          colour = "Defaulters"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Defaulters (smoothed)`,
+                          colour = "Defaulters (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Defaulters" = "red", 
+                                 "Defaulters (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Defaulters over time from 2016 to 2019 - Gazera State", 
+       x = "", y = "Defaulters") +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 15, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 20, ymax = 35, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 40, ymax = 55, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 60, ymax = 75, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) 
+
+ggsave(filename = "defaultersOverTimeGazera.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
+
+
+## Plot admissions over time by state with seasonal calendar
+
+x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>%
+  filter(State == "Kassala") %>%
+  mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
+                             format = "%Y-%b-%d")) %>%
+  arrange(MonthYear) %>%
+  group_by(State) %>%
+  mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = Default,
+                          colour = "Defaulters"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Defaulters (smoothed)`,
+                          colour = "Defaulters (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Defaulters" = "red", 
+                                 "Defaulters (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Defaulters over time from 2016 to 2019 - Kassala State", 
+       x = "", y = "Defaulters") +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 5, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 7.5, ymax = 12.5, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 15, ymax = 20, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 22.5, ymax = 27.5, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) 
+
+ggsave(filename = "defaultersOverTimeKassala.png", device = "png", path = "figures", 
+       width = 12, height = 8, units = "in")
+
+
+## Plot admissions over time by state with seasonal calendar
+
+x <- aggregate(cbind(`New Admissions`, Default) ~ State + Month + Year, 
+               data = monitoring, FUN = sum) %>%
+  filter(State == "North Darfur") %>%
+  mutate(MonthYear = as.Date(paste(Year, Month, "01", sep = "-"), 
+                             format = "%Y-%b-%d")) %>%
+  arrange(MonthYear) %>%
+  group_by(State) %>%
+  mutate(`Admissions (smoothed)` = smooth_m3a3(x = `New Admissions`),
+         `Defaulters (smoothed)` = smooth_m3a3(x = Default))
+
+season <- seasonal_calendar %>%
+  mutate(startmy = paste(month.abb[month(as.Date(start))], year(as.Date(start))),
+         endmy = paste(month.abb[month(as.Date(end))], year(as.Date(end))))
+
+x %>%
+  ggplot() +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = Default,
+                          colour = "Defaulters"), size = 1) +
+  geom_line(mapping = aes(x = MonthYear, 
+                          y = `Defaulters (smoothed)`,
+                          colour = "Defaulters (smoothed)"),  
+            alpha = 0.5, size = 0.5) +
+  scale_colour_manual(name = "", 
+                      values = c("Defaulters" = "red", 
+                                 "Defaulters (smoothed)" = "gray50")) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y",
+               sec.axis = sec_axis(~ ., breaks = NULL)) +
+  labs(title = "Defaulters over time from 2016 to 2019 - North Darfur State", 
+       x = "", y = "Defaulters") +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 0, ymax = 15, fill = group),
+            data = season %>% filter(group == "Lean season"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 20, ymax = 35, fill = group),
+            data = season %>% filter(group == "Harvest"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 40, ymax = 55, fill = group),
+            data = season %>% filter(group == "Planting"),
+            alpha = 0.25) +
+  geom_rect(mapping = aes(xmin = as.Date(start), xmax = as.Date(end),
+                          ymin = 60, ymax = 75, fill = group),
+            data = season %>% filter(group == "Rainfall"),
+            alpha = 0.25) +
+  unicef_theme +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10)) 
+
+ggsave(filename = "defaultersOverTimeNorth Darfur.png", device = "png", path = "figures", 
        width = 12, height = 8, units = "in")
