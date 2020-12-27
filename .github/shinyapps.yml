@@ -1,0 +1,57 @@
+name: shinyapps
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      
+jobs:
+  shinyapps:
+    runs-on: macOS-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v1
+        
+      - name: Setup pandoc
+        uses: r-lib/actions/setup-pandoc@v1
+        
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-shinydoc
+          restore-keys: |
+            ${{ runner.os }}-
+        
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != "true"
+        run: |
+          install.packages(c("shiny", "flexdashboard", "tidyr", "magrittr", 
+                             "plotly", "lubridate", "leaflet", "RColorBrewer", 
+                             "rsconnect", "remotes"))
+          remotes::install_github("rapidsurveys/squeacr")
+          remotes::install_github("spatialworks/sudan")
+        shell: Rscript {0}
+        
+      - name: Connect to shiny
+        env: |
+          SHINY_TOKEN: ${{ secrets.SHINY_TOKEN }}
+          SHINY_SECRET: ${{ secrets.SHINY_SECRET }}
+        
+        run: |
+          rsconnect::setAccountInfo(name = "katilingban",
+                                    token = Sys.getenv("SHINY_TOKEN"),
+                                    secret = Sys.getenv("SHINY_SECRET"))
+        shell: Rscript {0}
+          
+      - name: Upload to shinyapps.io
+        run: |
+          rsconnect::deployDoc(doc = "sudanCMAMdashboard.Rmd", 
+            forceUpdate = getOption("rsconnect.force.update.apps", TRUE))
+        shell: Rscript {0}
+        
