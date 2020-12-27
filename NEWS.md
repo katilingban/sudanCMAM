@@ -1,3 +1,9 @@
+# Sudan CMAM Dashboard v0.1.14
+
+* added effectiveness measures
+
+* added GitHub Actions Workflow to deploy to shinyapps.io
+
 # Sudan CMAM Dashboard v0.1.13
 
 In this version:
