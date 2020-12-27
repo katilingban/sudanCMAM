@@ -49,7 +49,7 @@ jobs:
                                     secret = Sys.getenv("SHINY_SECRET"))
         shell: Rscript {0}
           
-      - name: Upload to shinyapps.io
+      - name: Deploy to shinyapps.io
         run: |
           rsconnect::deployDoc(doc = "sudanCMAMdashboard.Rmd", 
             forceUpdate = getOption("rsconnect.force.update.apps", TRUE))
