@@ -45,8 +45,8 @@ jobs:
         
         run: |
           rsconnect::setAccountInfo(name = "katilingban",
-                                    token = Sys.getenv("SHINY_TOKEN"),
-                                    secret = Sys.getenv("SHINY_SECRET"))
+                                    token = SHINY_TOKEN),
+                                    secret = SHINY_SECRET))
         shell: Rscript {0}
           
       - name: Deploy to shinyapps.io
