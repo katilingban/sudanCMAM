@@ -2,7 +2,7 @@
 
 * added effectiveness measures
 
-* added GitHub Actions Workflow to deploy to shinyapps.io
+* added GitHub Actions Workflow to deploy to shinyapps.io automatically
 
 # Sudan CMAM Dashboard v0.1.13
 
