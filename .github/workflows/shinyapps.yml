@@ -44,8 +44,8 @@ jobs:
           SHINY_SECRET: ${{ secrets.SHINY_SECRET }}
         
         run: |
-          shiny_token <- Sys.getenv("SHINY_TOKEN")
-          shiny-secret <- Sys.getenv("SHINY_SECRET")
+          shiny_token = Sys.getenv("SHINY_TOKEN")
+          shiny-secret = Sys.getenv("SHINY_SECRET")
           rsconnect::setAccountInfo(name = "katilingban",
                                     token = shiny_token),
                                     secret = shiny_secret))
