@@ -38,7 +38,7 @@ jobs:
           remotes::install_github("spatialworks/sudan")
         shell: Rscript {0}
         
-      - name: Connect to shiny
+      - name: Configure shinyapps.io account
         env: |
           SHINY_TOKEN: ${{ secrets.SHINY_TOKEN }}
           SHINY_SECRET: ${{ secrets.SHINY_SECRET }}
