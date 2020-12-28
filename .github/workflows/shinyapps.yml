@@ -29,7 +29,7 @@ jobs:
             ${{ runner.os }}-
         
       - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != "true"
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           install.packages(c("shiny", "flexdashboard", "tidyr", "magrittr", 
                              "plotly", "lubridate", "leaflet", "RColorBrewer", 
