@@ -3,8 +3,7 @@ name: shinyapps
 on:
   push:
     branches:
-      - main
-      - master
+      - emmanuel
       
 jobs:
   shinyapps:
@@ -40,11 +39,11 @@ jobs:
         
       - name: Configure shinyapps.io account
         env:
-          SHINY_TOKEN: ${{ secrets.SHINY_TOKEN }}
-          SHINY_SECRET: ${{ secrets.SHINY_SECRET }}
+          SHINY_TOKEN: ${{ secrets.SHINY_EM_TOKEN }}
+          SHINY_SECRET: ${{ secrets.SHINY_EM_SECRET }}
         
         run: |
-          rsconnect::setAccountInfo(name = "katilingban",
+          rsconnect::setAccountInfo(name = "emandalazi",
                                     token = Sys.getenv("SHINY_TOKEN"),
                                     secret = Sys.getenv("SHINY_SECRET"))
         shell: Rscript {0}
