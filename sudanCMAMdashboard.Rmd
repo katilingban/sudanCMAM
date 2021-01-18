@@ -63,7 +63,8 @@ unicef_darkblue  <- "#374EA2"
 
 ## UNICEF ggplot theme settings
 unicef_theme <- theme_bw() +
-  theme(plot.title = element_text(size = 16, colour = unicef_darkblue),
+  theme(text = element_text(family = "Helvetica"),
+        plot.title = element_text(size = 16, colour = unicef_darkblue),
         plot.subtitle = element_text(size = 14, colour = unicef_blue),
         panel.border = element_rect(colour = unicef_darkblue,
                                     size = 0.5),
