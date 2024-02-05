@@ -3,5 +3,6 @@
 .RData
 .Ruserdata
 rsconnect
-data
+#data
+!data/.gitkeep
 .DS_Store
